@@ -21,9 +21,14 @@
     return k;
   };
 
+  /** export: lay the Clusters view out for the image's chart area instead of the screen */
+  let exportSize = $state<{ w: number; h: number } | null>(null);
+  export async function setExportSize(s: { w: number; h: number } | null) { exportSize = s; await tick(); }
+  let LW = $derived(exportSize?.w ?? w);
+  let LH = $derived(exportSize?.h ?? h);
   let layout = $derived(
-    w > 0 && h > 0
-      ? computeLayout(ui.variant, orgs, counties, w, h, ui.groupBy, { other: t.other, bucharest: t.bucharest, groupLabel })
+    LW > 0 && LH > 0
+      ? computeLayout(ui.variant, orgs, counties, LW, LH, ui.groupBy, { other: t.other, bucharest: t.bucharest, groupLabel }, !!exportSize)
       : null,
   );
   let path = $derived(layout?.projection ? geoPath(layout.projection) : null);
@@ -140,7 +145,7 @@
 </script>
 
 <div class="stage" bind:this={stageEl} class:zoomable={ui.variant === 'zoom'} class:scroll={ui.variant === 'universe'}>
-  <svg bind:this={svgEl} width={w} height={layout?.contentH ?? h} role="img" aria-label="Map of organisations">
+  <svg bind:this={svgEl} width={LW} height={exportSize ? LH : (layout?.contentH ?? h)} role="img" aria-label="Map of organisations">
     {#if layout}
       <!-- background -->
       {#if path && ui.variant !== 'universe'}

@@ -20,6 +20,8 @@ export interface ExportOpts {
   footer: string[];
   /** phones: export in a social-media frame, height = width × social (4:5 → 1.25), 1080×1350 PNG */
   social?: number;
+  /** re-lay the chart out for the image's chart area (w × h) before it is copied */
+  fitTo?: (w: number, h: number) => Promise<void>;
   filename: string;
 }
 
@@ -135,11 +137,11 @@ function contentBox(svg: SVGSVGElement, overlay: HTMLElement | null | undefined)
 
 export async function buildSvg(o: ExportOpts) {
   // social format crops to the content so the chart can fill the frame
-  const box = o.social ? contentBox(o.svg, o.overlay) : { x: 0, y: 0, w: o.svg.width.baseVal.value, h: o.svg.height.baseVal.value };
-  const chartW = box.w;
-  const chartH = box.h;
+  let box = contentBox(o.svg, o.overlay);
+  let chartW = box.w;
+  let chartH = box.h;
   // social format (phones): fixed width, height = width × aspect; otherwise width follows the chart
-  const W = o.social ? 540 : Math.max(chartW, 640);
+  const W = o.social ? 540 : Math.max(o.svg.width.baseVal.value, 640);
   const compact = W < 700;
   const pad = 24;
   const [logo, fonts] = await Promise.all([dataUrl('./avatars/logo.webp'), fontCss()]);
@@ -201,13 +203,21 @@ export async function buildSvg(o: ExportOpts) {
 
   // chart: actual size, or scaled to fill the space left in the 4:5 frame
   let H: number; let cw = chartW; let ch = chartH;
+  if (o.social && o.fitTo) {
+    await o.fitTo(W - pad * 2, Math.round(W * o.social) - chartY - footH - pad + 8);
+    box = contentBox(o.svg, o.overlay);
+    chartW = box.w; chartH = box.h; cw = chartW; ch = chartH;
+  }
   if (o.social) {
     H = Math.round(W * o.social);
     const availH = H - chartY - footH - pad + 8;
-    const k = Math.min((W - pad) / chartW, availH / chartH);
+    const k = Math.min((W - pad * 2) / chartW, availH / chartH);
     cw = chartW * k; ch = chartH * k;
   } else {
-    H = chartY + chartH + footH + pad - 8;
+    // fill the content width; cap the height so a tall Clusters view doesn't become a poster
+    const k = Math.min((W - pad * 2) / chartW, Math.max(1, 1100 / chartH));
+    cw = chartW * k; ch = chartH * k;
+    H = chartY + ch + 12 + footH + pad - 8;
   }
   const clone = cloneChart(o.svg);
   const origin = o.svg.getBoundingClientRect();

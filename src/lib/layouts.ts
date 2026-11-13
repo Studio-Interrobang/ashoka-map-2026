@@ -99,12 +99,13 @@ function groupedGeo(
 
 export function computeLayout(
   variant: Variant, orgs: Org[], counties: Counties, w: number, h: number, groupBy: GroupBy, labels: { other: string; bucharest: string; groupLabel: (k: string) => string },
+  fit = false,
 ): Layout {
   const r = nodeRadius(w, h);
   const counts = countyCounts(orgs);
   const pad = Math.max(10, w * 0.03);
 
-  if (variant === 'universe') return universe(orgs, w, h, groupBy, labels.groupLabel, counts);
+  if (variant === 'universe') return universe(orgs, w, h, groupBy, labels.groupLabel, counts, fit);
 
   if (variant === 'zoom') {
     const projection = fitProjection(counties, pad, pad, w - pad, h - pad);
@@ -152,7 +153,21 @@ export function computeLayout(
   return { nodes: place(), groups, projection, countyCounts: counts };
 }
 
-function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabel: (k: string) => string, counts: Map<string, number>): Layout {
+let measureCtx: CanvasRenderingContext2D | null = null;
+/** Number of lines a group label wraps to in the Clusters view (.ulabel: 9.5px Noto Sans, 500). */
+function labelLines(text: string, width: number, indent = 0) {
+  measureCtx ??= document.createElement('canvas').getContext('2d');
+  const m = (t: string) => (measureCtx ? (measureCtx.font = "500 9.5px 'Noto Sans', sans-serif", measureCtx.measureText(t).width) : t.length * 5.3);
+  let lines = 1; let cur = indent;
+  for (const word of text.split(' ')) {
+    const ww = m(word); const sp = m(' ');
+    if (cur > 0 && cur + sp + ww > width) { lines++; cur = ww; } else cur += (cur > 0 ? sp : 0) + ww;
+  }
+  return lines;
+}
+
+/** fit: always shrink to fit the box (export), instead of letting phones scroll */
+function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabel: (k: string) => string, counts: Map<string, number>, fit = false): Layout {
   // an organisation can sit in several activity groups, so groups hold node instances (key = org id, or id@group)
   const keysOf: (o: Org) => string[] = {
     reach: (o: Org) => [o.reach],
@@ -175,14 +190,16 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
   const nodes = new Map<string, NodePos>();
   const groups: Group[] = [];
   let contentH = h;
-  const labelH = groupBy === 'cluster' ? 52 : groupBy === 'activity' ? 36 : 20;
+  // label height per group = measured wrapped lines of "<label> <n>" at the label width (+ cluster dots)
+  const dots = groupBy === 'cluster' ? 30 : 0;
+  const labelH = (k: string, lw: number) => labelLines(`${groupLabel(k)} ${buckets.get(k)!.length}`, lw, dots) * 11.6 + 9;
   const minCell = groupBy === 'cluster' ? 140 : 96;
   const gapX = 14; const gapY = 10;
   const base = nodeRadius(w, h);
   for (let step = 0; step <= 26; step++) {
     const s = 1.6 - step * 0.05; // 1.6 → 0.3
     // on phones keep bubbles legible and let the view scroll instead of shrinking further
-    const last = step === 26 || (w < 560 && s <= 0.85);
+    const last = step === 26 || (!fit && w < 560 && s <= 0.85);
     const r = base * s;
     const items = keys.map((k) => { const p = packEqual(buckets.get(k)!, r, 0.9); return { k, p, cw: Math.max(p.R * 2, minCell) }; });
     const rows: { items: typeof items; width: number; height: number }[] = [];
@@ -192,7 +209,8 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
       cw += (cur.length ? gapX : 0) + it.cw; cur.push(it);
     }
     if (cur.length) rows.push({ items: cur, width: cw, height: 0 });
-    for (const row of rows) row.height = labelH + Math.max(...row.items.map((i) => i.p.R * 2));
+    const rowLabelH = (row: (typeof rows)[number]) => Math.max(...row.items.map((i) => labelH(i.k, i.cw - 6)));
+    for (const row of rows) row.height = rowLabelH(row) + Math.max(...row.items.map((i) => i.p.R * 2));
     const H = rows.reduce((a, r2) => a + r2.height, 0) + gapY * (rows.length - 1);
     if (H > h - 8 && !last) continue;
     contentH = Math.max(h, H + 8);
@@ -200,8 +218,9 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
     for (const row of rows) {
       let x = (w - row.width) / 2;
       const maxD = Math.max(...row.items.map((i) => i.p.R * 2));
+      const lh = rowLabelH(row);
       for (const it of row.items) {
-        const cx = x + it.cw / 2; const cy = y + labelH + maxD / 2;
+        const cx = x + it.cw / 2; const cy = y + lh + maxD / 2;
         groups.push({ key: it.k, label: groupLabel(it.k), n: buckets.get(it.k)!.length, x: cx, y: cy, r: it.p.R, ax: 0, ay: 0, lw: it.cw - 6 });
         for (const c of it.p.circles) { const ik = instKey(c.id, it.k); nodes.set(ik, { x: cx + c.dx, y: cy + c.dy, r }); instances.push({ key: ik, id: c.id }); }
         x += it.cw + gapX;

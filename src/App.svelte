@@ -57,7 +57,7 @@
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
 
   // ---- download (Map / Clusters) ----
-  let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null }; withFullView: <T>(fn: () => Promise<T>) => Promise<T> } | undefined>();
+  let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null }; withFullView: <T>(fn: () => Promise<T>) => Promise<T>; setExportSize: (s: { w: number; h: number } | null) => Promise<void> } | undefined>();
   let dlOpen = $state(false);
   let busy = $state(false);
   function describe() {
@@ -89,11 +89,13 @@
           },
           footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
           social: narrow ? 1.25 : undefined,
+          // Clusters on phones: re-lay the bubbles for the image (at a 620px-wide scale so labels stay proportionate)
+          fitTo: narrow && ui.view === 'clusters' ? (aw, ah) => ref.setExportSize({ w: 620, h: (ah * 620) / aw }) : undefined,
           filename: `ashoka-${ui.view === 'map' ? 'map' : 'clusters'}-2026-${ui.lang}`,
         });
       };
       await (narrow && ui.view === 'map' ? ref.withFullView(run) : run());
-    } finally { busy = false; }
+    } finally { busy = false; await ref.setExportSize(null); }
   }
   // the Clusters view doesn't offer a filter for the dimension it is grouped by
   const groupLens = { cluster: 'clusters', reach: 'reach', activity: 'activities' } as const;
@@ -263,7 +265,11 @@
   .narrow footer .src { flex: 1 1 100%; }
 
   /* phones: just the total, left, next to the Filters button */
-  .kpi { display: flex; align-items: baseline; gap: 6px; margin-right: auto; }
+  .kpi { display: flex; align-items: baseline; gap: 6px; margin-right: auto; min-width: 0; }
+  /* phones: total · Filters · Group by on one row */
+  .narrow .filters { flex-wrap: nowrap; }
+  .narrow .groupby { margin-left: 0; flex: 0 1 auto; min-width: 0; }
+  .narrow .groupby select { max-width: 132px; min-width: 0; text-overflow: ellipsis; }
   .kpi .num { font-size: 30px; font-weight: 800; color: var(--cyan-text); line-height: 1; font-variant-numeric: tabular-nums; }
   .kpi .lbl { font-size: 13px; font-weight: 700; color: var(--ink); }
   .wide .content { padding: 12px 14px 10px; }

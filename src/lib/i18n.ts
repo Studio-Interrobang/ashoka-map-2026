@@ -160,7 +160,7 @@ const ro: typeof en = {
     close: 'Închide',
   },
   col: { org: 'Organizație', location: 'Locație', clusters: 'Clustere', reach: 'Arie de acțiune' },
-  groupBy: { label: 'Grupează după', reach: 'Arie de acțiune', cluster: 'Combinații de clustere', activity: 'Activitate' },
+  groupBy: { label: 'Grupează după', reach: 'Arie de acțiune', cluster: 'Combinații', activity: 'Activitate' },
   other: 'Altele',
   notSpecified: 'Nespecificat',
   bucharest: 'București',
