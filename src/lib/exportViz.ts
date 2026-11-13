@@ -158,10 +158,7 @@ export async function buildSvg(o: ExportOpts) {
   head += `<text x="${tx}" y="${subY}" font-size="14" font-weight="700" fill="#0074b0">${esc(o.subtitle)}</text>`;
   y = Math.max(y + logoS, subY) + 18;
   head += `<line x1="${pad}" x2="${W - pad}" y1="${y - 8}" y2="${y - 8}" stroke="#E1E4E8"/>`;
-  for (const line of o.lines) {
-    for (const l of wrap(line, W - pad * 2, 12.5)) { y += 17; head += `<text x="${pad}" y="${y}" font-size="12.5" fill="#33404d">${esc(l)}</text>`; }
-  }
-  y += 14;
+  y += 6;
 
   // summary band
   if (o.summary) {
@@ -193,8 +190,13 @@ export async function buildSvg(o: ExportOpts) {
         head += `<text x="${nx}" y="${ly}" font-size="9.5" letter-spacing="0.2" fill="#1a1f24">${esc(l)}</text>`;
       });
     });
-    y += bh + 14;
+    y += bh;
   }
+  // filter summary, under the cluster KPIs
+  for (const line of o.lines) {
+    for (const l of wrap(line, W - pad * 2, 12.5)) { y += 18; head += `<text x="${pad}" y="${y}" font-size="12.5" fill="#33404d">${esc(l)}</text>`; }
+  }
+  y += 16;
   const chartY = y;
 
   // footer (measured first so the social format can pin it to the bottom)

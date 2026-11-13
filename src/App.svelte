@@ -24,6 +24,8 @@
   let t = $derived(dict(ui.lang));
   let selectedOrg = $derived(orgs.find((o) => o.id === ui.selected) ?? null);
   let narrow = $derived(appW < 600);
+  /** desktop: the logo is as tall as title + subtitle + intro */
+  let titlesH = $state(0);
   let shownN = $derived(orgs.filter((o) => matches(o, ui.lens)).length);
   let wide = $derived(appW >= 1000);
 
@@ -113,8 +115,8 @@
   <div class="content" inert={!!selectedOrg}>
     {#if ui.header}
       <header class="masthead">
-        <img class="logo" src="./avatars/logo.webp" alt="" width="76" height="76" />
-        <div class="titles">
+        <img class="logo" src="./avatars/logo.webp" alt="" width="76" height="76" style={!narrow && titlesH ? `width:${titlesH}px;height:${titlesH}px` : ""} />
+        <div class="titles" bind:clientHeight={titlesH}>
           <h1>{t.title}</h1>
           <p class="sub">{t.subtitle}</p>
           {#if !narrow}<p class="intro">{t.intro}</p>{/if}
@@ -210,6 +212,7 @@
   .titles .intro { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; color: #4a5560; }
   .wide h1 { font-size: 26px; }
   .wide .logo { width: 84px; height: 84px; }
+
 
   /* toolbar: search · views · language */
   .toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 34px; }
