@@ -18,7 +18,6 @@
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DUR = [6500, 6500, 6500, 5500, 6500];
   const LAST = DUR.length - 1;
-  const DIRS = { C1: [-1, -1], C2: [1, -1], C3: [1, 1], C4: [-1, 1] } as const;
 
   let step = $state(0);
   let playing = $state(!reduce);
@@ -30,7 +29,10 @@
   let sh = $state(0);
 
   // ---- data-driven copy ----
+  const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
+  /** same, as HTML with every figure in bold (values come from the sheet, so they are escaped) */
+  const fillBold = (s: string, v: Record<string, string | number>) => esc(s).replace(/\{(\w+)\}/g, (_, k) => `<strong>${esc(String(v[k] ?? ''))}</strong>`);
   let stats = $derived.by(() => {
     const byUat = new Map<string, number>();
     for (const o of orgs) byUat.set(o.uat, (byUat.get(o.uat) ?? 0) + 1);
@@ -156,7 +158,6 @@
         <img
           src="./avatars/quad-{c}.webp" alt=""
           class:in={i < shown}
-          style="--dx:{DIRS[c][0] * 26}%;--dy:{DIRS[c][1] * 26}%"
         />
       {/each}
     </div>
@@ -199,7 +200,7 @@
     {#key step}
       <div in:fade={{ duration: reduce ? 0 : 250 }}>
         <h2 id="intro-title">{fill(cap.title, stats)}</h2>
-        <p>{fill(cap.text, stats)}</p>
+        <p>{@html fillBold(cap.text, stats)}</p>
       </div>
     {/key}
     {#if step === 0}
@@ -250,8 +251,9 @@
 
   .built { left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.9); }
   .built.on { transform: translate(-50%, -50%) scale(1); }
-  .built img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.7);
-    transition: opacity 0.6s, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+  /* each slice grows gently out of the centre of the avatar */
+  .built img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transform: scale(0.55); transform-origin: 50% 50%;
+    transition: opacity 0.9s ease-out, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1); }
   .built img.in { opacity: 1; transform: none; }
 
   .row { inset: 0; display: flex; align-items: center; justify-content: center; gap: 4%; }
@@ -277,6 +279,7 @@
   .narrow .caption { padding: 8px 14px 2px; min-height: 104px; }
   h2 { margin: 0; font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1.2; }
   .narrow h2 { font-size: 18px; }
+  .caption p :global(strong) { color: var(--navy); font-weight: 800; }
   .caption p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: #33404d; max-width: 640px; }
   .narrow .caption p { font-size: 13px; }
   .legend { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
