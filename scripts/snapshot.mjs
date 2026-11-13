@@ -53,6 +53,7 @@ const ACTIVITIES = [
   ['research', /cercetare/i],
   ['legal', /suport juridic|litigii/i],
   ['media', /media|jurnalism/i],
+  ['other', /alt[aă] activitate/i],
 ];
 const OUTCOMES = [
   ['engagement', /implic[aă]rii civice/i],

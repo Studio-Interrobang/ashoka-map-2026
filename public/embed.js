@@ -4,7 +4,7 @@
   function size(f) {
     var w = f.getBoundingClientRect().width || f.parentNode.clientWidth;
     var vh = window.innerHeight || 800;
-    var h = w >= 600 ? 780 : Math.min(Math.max(vh * 0.88, 600), 780);
+    var h = w >= 600 ? 840 : Math.min(Math.max(vh * 0.9, 640), 840);
     var min = parseInt(f.getAttribute('data-min-height') || '0', 10);
     f.style.height = Math.max(h, min) + 'px';
   }

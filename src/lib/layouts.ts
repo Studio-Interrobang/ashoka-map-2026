@@ -21,6 +21,7 @@ export interface Layout {
   projection: GeoProjection | null;
   countyCounts: Map<string, number>;
   contentH?: number; // clusters view may be taller than the stage (scrolls)
+  instances?: { key: string; id: string }[]; // clusters view: one org may appear in several groups
 }
 
 export function nodeRadius(w: number, h: number) {
@@ -152,37 +153,30 @@ export function computeLayout(
 }
 
 function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabel: (k: string) => string, counts: Map<string, number>): Layout {
-  const keyOf: (o: Org) => string = {
-    none: () => 'all',
-    reach: (o: Org) => o.reach,
-    cluster: (o: Org) => o.clusters.join(' + '),
-    county: (o: Org) => ((counts.get(norm(o.county)) ?? 0) >= 4 ? o.county : '~other'),
-    decade: (o: Org) => (o.year ? (o.year < 2000 ? '1990s' : `${Math.floor(o.year / 10) * 10}s`) : '~other'),
+  // an organisation can sit in several activity groups, so groups hold node instances (key = org id, or id@group)
+  const keysOf: (o: Org) => string[] = {
+    reach: (o: Org) => [o.reach],
+    cluster: (o: Org) => [o.clusters.join(' + ')],
+    activity: (o: Org) => (o.activities.length ? o.activities : ['~other']),
   }[groupBy];
   const buckets = new Map<string, Org[]>();
-  for (const o of orgs) { const k = keyOf(o); if (!buckets.has(k)) buckets.set(k, []); buckets.get(k)!.push(o); }
+  for (const o of orgs) for (const k of keysOf(o)) { if (!buckets.has(k)) buckets.set(k, []); buckets.get(k)!.push(o); }
+  const multi = groupBy === 'activity';
+  // first appearance keeps the plain id so it animates from its map position; repeats get id@group
+  const seen = new Set<string>();
+  const instKey = (id: string, k: string) => (multi && seen.has(id) ? `${id}@${k}` : (seen.add(id), id));
+  const instances: { key: string; id: string }[] = [];
   let keys = [...buckets.keys()];
   if (groupBy === 'reach') keys = REACHES.filter((k) => buckets.has(k));
-  else keys.sort((a, b) => buckets.get(b)!.length - buckets.get(a)!.length);
+  else keys.sort((a, b) => (a === '~other' ? 1 : b === '~other' ? -1 : buckets.get(b)!.length - buckets.get(a)!.length));
 
   // Flow layout: one packed bubble per group, laid out in centred rows like words in a paragraph,
   // with room above each bubble for its (possibly long, official) label. Scale is chosen to fit the stage.
   const nodes = new Map<string, NodePos>();
   const groups: Group[] = [];
-  if (groupBy === 'none') {
-    const r0 = nodeRadius(w, h);
-    for (let s = 2.2; s >= 0.4; s -= 0.05) {
-      const p = packEqual(buckets.get('all')!, r0 * s, 1);
-      if (p.R * 2 <= Math.min(w, h) - 16) {
-        for (const c of p.circles) nodes.set(c.id, { x: w / 2 + c.dx, y: h / 2 + c.dy, r: r0 * s });
-        break;
-      }
-    }
-    return { nodes, groups, projection: null, countyCounts: counts };
-  }
   let contentH = h;
-  const labelH = groupBy === 'cluster' ? 66 : 22;
-  const minCell = groupBy === 'cluster' ? 150 : 90;
+  const labelH = groupBy === 'cluster' ? 52 : 20;
+  const minCell = groupBy === 'cluster' ? 140 : 96;
   const gapX = 14; const gapY = 10;
   const base = nodeRadius(w, h);
   for (let step = 0; step <= 26; step++) {
@@ -209,14 +203,14 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
       for (const it of row.items) {
         const cx = x + it.cw / 2; const cy = y + labelH + maxD / 2;
         groups.push({ key: it.k, label: groupLabel(it.k), n: buckets.get(it.k)!.length, x: cx, y: cy, r: it.p.R, ax: 0, ay: 0, lw: it.cw - 6 });
-        for (const c of it.p.circles) nodes.set(c.id, { x: cx + c.dx, y: cy + c.dy, r });
+        for (const c of it.p.circles) { const ik = instKey(c.id, it.k); nodes.set(ik, { x: cx + c.dx, y: cy + c.dy, r }); instances.push({ key: ik, id: c.id }); }
         x += it.cw + gapX;
       }
       y += row.height + gapY;
     }
     break;
   }
-  return { nodes, groups, projection: null, countyCounts: counts, contentH };
+  return { nodes, groups, projection: null, countyCounts: counts, contentH, instances };
 }
 
 /** Collision-resolved positions for the zoomable map at zoom level k (in map coordinates). */

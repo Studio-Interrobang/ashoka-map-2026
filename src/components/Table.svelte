@@ -5,13 +5,13 @@
   import type { Dict } from '../lib/i18n';
 
   let { orgs, t }: { orgs: Org[]; t: Dict } = $props();
-  type SortKey = 'short' | 'uat' | 'reach' | 'year';
+  type SortKey = 'short' | 'uat' | 'reach';
   let sortKey = $state<SortKey>('short');
   let asc = $state(true);
 
   let rows = $derived.by(() => {
     const list = orgs.filter((o) => matches(o, ui.lens));
-    const val = (o: Org) => (sortKey === 'reach' ? REACHES.indexOf(o.reach) : sortKey === 'year' ? (o.year ?? 9999) : o[sortKey]);
+    const val = (o: Org) => (sortKey === 'reach' ? REACHES.indexOf(o.reach) : o[sortKey]);
     return list.sort((a, b) => {
       const x = val(a); const y = val(b);
       const c = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'ro');
@@ -30,7 +30,6 @@
         <th aria-sort={aria('uat')} class="hide-s"><button onclick={() => sort('uat')}>{t.col.location}</button></th>
         <th class="hide-s">{t.col.clusters}</th>
         <th aria-sort={aria('reach')}><button onclick={() => sort('reach')}>{t.col.reach}</button></th>
-        <th aria-sort={aria('year')} class="hide-s"><button onclick={() => sort('year')}>{t.col.founded}</button></th>
       </tr>
     </thead>
     <tbody>
@@ -51,7 +50,6 @@
             {#each o.clusters as c}<div class="cl"><span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}</div>{/each}
           </td>
           <td>{t.reach[o.reach]}</td>
-          <td class="hide-s num">{o.year ?? '–'}</td>
         </tr>
       {/each}
     </tbody>
@@ -61,8 +59,10 @@
 <style>
   .wrap { height: 100%; overflow: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th { position: sticky; top: 0; background: #fff; z-index: 1; text-align: left; border-bottom: 2px solid var(--navy); padding: 0; }
-  th button, th:not(:has(button)) { font: inherit; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--navy); font-weight: 700; padding: 10px 8px; background: none; border: none; cursor: pointer; }
+  /* the rule is a box-shadow so it stays under every header cell, sticky or not */
+  thead th { position: sticky; top: 0; background: #fff; z-index: 1; text-align: left; padding: 0; box-shadow: inset 0 -2px 0 var(--navy); }
+  th button, th:not(:has(button)) { font: inherit; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--navy); font-weight: 700; padding: 10px 8px; }
+  th button { background: none; border: none; cursor: pointer; }
   th[aria-sort='ascending'] button::after { content: ' ↑'; }
   th[aria-sort='descending'] button::after { content: ' ↓'; }
   td { padding: 8px; border-bottom: 1px solid #ECEEF1; vertical-align: top; }
@@ -75,7 +75,6 @@
   .sub { color: #888; font-size: 11.5px; }
   .cl { display: flex; align-items: flex-start; gap: 5px; font-size: 12px; line-height: 1.3; margin-bottom: 3px; } .cl .dot { margin-top: 4px; flex: none; }
   .dot { width: 8px; height: 8px; border-radius: 50%; }
-  .num { font-variant-numeric: tabular-nums; }
   .show-s { display: none; }
   .meta { color: #888; font-size: 11.5px; }
   @media (max-width: 560px) { .hide-s { display: none; } .show-s { display: block; } }

@@ -1,12 +1,15 @@
 <script lang="ts">
   import { ui, toggle, clearLens, lensActive } from '../lib/state.svelte';
-  import { REACHES, ACTIVITIES, type Org } from '../lib/types';
+  import { REACHES, ACTIVITIES, CLUSTERS, CLUSTER_COLORS, type Org } from '../lib/types';
   import type { Dict } from '../lib/i18n';
 
-  let { orgs, t, narrow = false }: { orgs: Org[]; t: Dict; narrow?: boolean } = $props();
-  let sheet = $state(false);
-  let total = $derived(ui.lens.reach.length + ui.lens.activities.length + (ui.lens.county ? 1 : 0));
   type Key = 'clusters' | 'reach' | 'activities' | 'county';
+  /** hide: lenses not offered in this view (e.g. the dimension the Clusters view is grouped by) */
+  let { orgs, t, narrow = false, hide = [] }: { orgs: Org[]; t: Dict; narrow?: boolean; hide?: Key[] } = $props();
+  let sheet = $state(false);
+  const ALL: Key[] = ['clusters', 'reach', 'activities', 'county'];
+  let keys = $derived(ALL.filter((k) => !hide.includes(k)));
+  let total = $derived(keys.reduce((a, k) => a + n(k), 0));
   let open = $state<Key | null>(null);
 
   let counties = $derived(
@@ -23,7 +26,11 @@
 <svelte:window onclick={onWindowClick} onkeydown={(e) => e.key === 'Escape' && (open = null)} />
 
 {#snippet options(k: Key)}
-  {#if k === 'reach'}
+  {#if k === 'clusters'}
+    {#each CLUSTERS as c}
+      <label class="cl"><input type="checkbox" checked={ui.lens.clusters.includes(c)} onchange={() => toggle(ui.lens.clusters, c)} /><span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}<span class="n">{count((o) => o.clusters.includes(c))}</span></label>
+    {/each}
+  {:else if k === 'reach'}
     {#each REACHES as r}
       <label><input type="checkbox" checked={ui.lens.reach.includes(r)} onchange={() => toggle(ui.lens.reach, r)} />{t.reach[r]}<span class="n">{count((o) => o.reach === r)}</span></label>
     {/each}
@@ -48,7 +55,7 @@
     <div class="sheet" role="dialog" aria-label={t.filters}>
       <div class="sheet-head"><strong>{t.filters}</strong><button class="done" onclick={() => (sheet = false)}>{t.done}</button></div>
       <div class="sheet-body">
-        {#each ['reach', 'activities', 'county'] as const as k}
+        {#each keys as k}
           <h4>{t.lens[k]}</h4>
           <div class="group">{@render options(k)}</div>
         {/each}
@@ -59,13 +66,13 @@
 {:else}
 <div class="bar">
   <div class="more">
-    {#each ['reach', 'activities', 'county'] as const as k}
+    {#each keys as k}
       <div class="lens">
         <button class="drop" class:on={n(k) > 0} aria-expanded={open === k} onclick={() => (open = open === k ? null : k)}>
           {t.lens[k]}{#if n(k)}<span class="badge">{n(k)}</span>{/if}<span class="caret">▾</span>
         </button>
         {#if open === k}
-          <div class="pop" role="menu">{@render options(k)}          </div>
+          <div class="pop" class:wide={k === 'clusters' || k === 'activities'} role="menu">{@render options(k)}</div>
         {/if}
       </div>
     {/each}
@@ -92,6 +99,8 @@
     position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 220px; background: #fff;
     border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); padding: 6px; display: flex; flex-direction: column;
   }
+  .pop.wide { min-width: 300px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
   .pop .scroll, .sheet .scroll { max-height: 240px; overflow: auto; display: flex; flex-direction: column; }
   .pop :global(label), .sheet :global(label) { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
   .pop :global(label:hover), .sheet :global(label:hover) { background: #F1F2F4; }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ui, matches, toggle } from '../lib/state.svelte';
+  import { ui, matches } from '../lib/state.svelte';
   import { CLUSTERS, type Org } from '../lib/types';
   import type { Dict } from '../lib/i18n';
 
@@ -8,7 +8,6 @@
   let shown = $derived(orgs.filter((o) => matches(o, ui.lens)));
   let nCounties = $derived(new Set(shown.map((o) => o.county)).size);
   let mix = $derived(CLUSTERS.map((c) => ({ c, n: shown.filter((o) => o.clusters.includes(c)).length })));
-  let anySel = $derived(ui.lens.clusters.length > 0);
   // AA-contrast text tones of the four cluster colours
   const tone = { C1: '#003F72', C2: '#00639a', C3: '#006b59', C4: '#9a5600' } as const;
 </script>
@@ -20,21 +19,15 @@
       {shown.length === orgs.length ? '' : `${t.of} ${orgs.length} `}{t.organisations}{" "}<br />{t.inCounties.replace('{n}', String(nCounties))}
     </span>
   </div>
-  <div class="clusters" role="group" aria-label={t.lens.clusters}>
+  <ul class="clusters" aria-label={t.lens.clusters}>
     {#each mix as m}
-      <button
-        class="cl"
-        class:on={ui.lens.clusters.includes(m.c)}
-        class:off={anySel && !ui.lens.clusters.includes(m.c)}
-        aria-pressed={ui.lens.clusters.includes(m.c)}
-        onclick={() => toggle(ui.lens.clusters, m.c)}
-      >
+      <li class="cl">
         <img src="./avatars/icon-{m.c}.webp" alt="" width="40" height="40" />
         <span class="num sm" style="color:{tone[m.c]}">{m.n}</span>
         <span class="name">{t.cluster[m.c]}</span>
-      </button>
+      </li>
     {/each}
-  </div>
+  </ul>
 </section>
 
 <style>
@@ -47,14 +40,9 @@
   .num { font-size: 30px; font-weight: 800; color: var(--cyan-text); line-height: 1; font-variant-numeric: tabular-nums; }
   .num.sm { font-size: 18px; min-width: 2ch; }
   .lbl { font-size: 11.5px; font-weight: 700; line-height: 1.25; color: var(--ink); }
-  .clusters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; min-width: 0; }
-  .cl {
-    display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 28px; text-align: left; font: inherit; cursor: pointer;
-    background: transparent; border: 1px solid transparent; border-radius: var(--radius); padding: 1px 5px; transition: opacity 0.2s, background 0.2s;
-  }
-  .cl:hover { background: #fff; border-color: #E1E4E8; }
-  .cl.on { background: #fff; border-color: var(--navy); }
-  .cl.off { opacity: 0.45; }
+  .clusters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 6px; min-width: 0; list-style: none; margin: 0; padding: 0; }
+  /* display only — filtering lives in the filter row */
+  .cl { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 28px; padding: 1px 5px; }
   .cl img { flex: none; width: 22px; height: 22px; }
   .name { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 11.5px; color: var(--ink); min-width: 0; }
 

@@ -8,15 +8,16 @@
   import { computeLayout, zoomSpread, nodeRadius, type NodePos } from '../lib/layouts';
   import { norm, type Counties } from '../lib/data';
   import { ui, matches, lensActive } from '../lib/state.svelte';
-  import type { Org } from '../lib/types';
+  import { CLUSTER_COLORS, type Cluster, type Org } from '../lib/types';
   import type { Dict } from '../lib/i18n';
 
   let { orgs, counties, w, h, t }: { orgs: Org[]; counties: Counties; w: number; h: number; t: Dict } = $props();
 
   const groupLabel = (k: string) => {
-    if (k === '~other') return t.other;
+    if (k === '~other') return ui.groupBy === 'activity' ? t.notSpecified : t.other;
     if (ui.groupBy === 'reach') return t.reach[k as keyof typeof t.reach] ?? k;
-    if (ui.groupBy === 'cluster') return k.split(' + ').map((c) => t.cluster[c as keyof typeof t.clusterShort]).join(' + ');
+    if (ui.groupBy === 'cluster') return k.split(' + ').map((c) => t.cluster[c as keyof typeof t.cluster]).join(' + ');
+    if (ui.groupBy === 'activity') return t.activity[k as keyof typeof t.activity] ?? k;
     return k;
   };
 
@@ -73,18 +74,29 @@
   });
 
   function zoomBy(f: number) { if (svgEl && zb) select(svgEl).transition().duration(350).call(zb.scaleBy, f); }
+  function resetZoom() { if (svgEl && zb) select(svgEl).transition().duration(450).call(zb.transform, zoomIdentity); }
+  let zoomed = $derived(zt.k > 1.01 || Math.abs(zt.x) > 1 || Math.abs(zt.y) > 1);
 
-  function pos(o: Org): NodePos | undefined {
+  // node instances: one per org, except the Clusters view grouped by activity (an org can appear in several groups)
+  let byId = $derived(new Map(orgs.map((o) => [o.id, o])));
+  let items = $derived(
+    ui.variant === 'universe' && layout?.instances
+      ? layout.instances.map((i) => ({ key: i.key, o: byId.get(i.id)! }))
+      : orgs.map((o) => ({ key: o.id, o })),
+  );
+  let hoverKey = $state<string | null>(null);
+
+  function pos(key: string): NodePos | undefined {
     if (ui.variant === 'zoom') {
-      const s = spread.get(o.id) ?? layout?.nodes.get(o.id);
+      const s = spread.get(key) ?? layout?.nodes.get(key);
       return s ? { x: zt.x + zt.k * s.x, y: zt.y + zt.k * s.y, r: rz } : undefined;
     }
-    return layout?.nodes.get(o.id);
+    return layout?.nodes.get(key);
   }
 
   let active = $derived(lensActive(ui.lens));
   let hoveredOrg = $derived(orgs.find((o) => o.id === ui.hovered));
-  let hoveredPos = $derived(hoveredOrg ? pos(hoveredOrg) : undefined);
+  let hoveredPos = $derived(hoverKey && hoveredOrg ? pos(hoverKey) : undefined);
 
   function fill(name: string) {
     // zoomable map: counties with organisations a touch darker than empty ones
@@ -138,8 +150,8 @@
 
       <!-- organisations -->
       <g class="nodes" class:animate={ready && !zooming}>
-        {#each orgs as o (o.id)}
-          {@const p = pos(o)}
+        {#each items as { key, o } (key)}
+          {@const p = pos(key)}
           {#if p}
             <g
               class="node"
@@ -149,10 +161,10 @@
               role="button"
               tabindex="0"
               aria-label={o.short}
-              onmouseenter={() => (ui.hovered = o.id)}
-              onmouseleave={() => (ui.hovered = null)}
-              onfocus={() => (ui.hovered = o.id)}
-              onblur={() => (ui.hovered = null)}
+              onmouseenter={() => { ui.hovered = o.id; hoverKey = key; }}
+              onmouseleave={() => { ui.hovered = null; hoverKey = null; }}
+              onfocus={() => { ui.hovered = o.id; hoverKey = key; }}
+              onblur={() => { ui.hovered = null; hoverKey = null; }}
               onclick={() => (ui.selected = o.id)}
               onkeydown={(e) => onKey(e, o.id)}
             >
@@ -183,7 +195,9 @@
 
   {#if layout && ui.variant === 'universe'}
     {#each layout.groups as g (g.key)}
-      <div class="ulabel" style="left:{g.x}px; top:{g.y - g.r - 6}px; width:{g.lw ?? 130}px">{g.label} <b>{g.n}</b></div>
+      <div class="ulabel" style="left:{g.x}px; top:{g.y - g.r - 5}px; width:{g.lw ?? 130}px">
+        {#if ui.groupBy === 'cluster'}<span class="udots">{#each g.key.split(' + ') as c}<i style="background:{CLUSTER_COLORS[c as Cluster]}"></i>{/each}</span>{/if}{g.label} <b>{g.n}</b>
+      </div>
     {/each}
   {/if}
 
@@ -195,8 +209,9 @@
 
   {#if ui.variant === 'zoom'}
     <div class="zoom-ctl">
-      <button onclick={() => zoomBy(1.8)} aria-label="Zoom in">+</button>
-      <button onclick={() => zoomBy(1 / 1.8)} aria-label="Zoom out">−</button>
+      <button onclick={() => zoomBy(1.8)} aria-label={t.zoomIn} title={t.zoomIn}>+</button>
+      <button onclick={() => zoomBy(1 / 1.8)} aria-label={t.zoomOut} title={t.zoomOut}>−</button>
+      {#if zoomed}<button class="reset" onclick={resetZoom} aria-label={t.reset} title={t.reset}>⟲</button>{/if}
     </div>
     <div class="hint">{t.zoomHint}</div>
   {/if}
@@ -223,8 +238,10 @@
   .glabel { font-size: 11px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
   .glabel.big { font-size: 14px; font-weight: 700; fill: var(--navy); }
   .gcount { font-size: 26px; font-weight: 800; fill: var(--cyan-text); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-  .ulabel { position: absolute; transform: translate(-50%, -100%); text-align: center; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.25; font-weight: 600; color: var(--ink); pointer-events: none; }
-  .ulabel b { color: var(--navy); }
+  .ulabel { position: absolute; transform: translate(-50%, -100%); text-align: center; font-size: 9.5px; line-height: 1.2; font-weight: 500; color: #4a5560; pointer-events: none; }
+  .ulabel b { color: var(--navy); font-weight: 800; font-size: 10.5px; }
+  .udots { display: inline-flex; gap: 2px; margin-right: 4px; vertical-align: 0; }
+  .udots i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .tip {
     position: absolute; transform: translate(-50%, -100%); pointer-events: none;
     background: var(--navy); color: #fff; padding: 5px 9px; border-radius: var(--radius-sm); font-size: 12px;
@@ -232,6 +249,8 @@
   }
   .tip span { opacity: 0.75; font-size: 11px; }
   .zoom-ctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
-  .zoom-ctl button { width: 30px; height: 30px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-size: 18px; color: var(--navy); cursor: pointer; }
+  .zoom-ctl button { width: 30px; height: 30px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-size: 18px; line-height: 1; color: var(--navy); cursor: pointer; padding: 0; }
+  .zoom-ctl button:hover { background: #F3F4F6; }
+  .zoom-ctl .reset { font-size: 16px; }
   .hint { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
 </style>

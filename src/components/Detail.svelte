@@ -49,7 +49,7 @@
       <ul class="clusters">
         {#each org.clusters as c}<li><span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}</li>{/each}
       </ul>
-      {#if org.desc[ui.lang]}<p class="desc">{org.desc[ui.lang]}</p>{/if}
+      {#if org.desc[ui.lang]}<h3>{t.detail.about}</h3><p class="desc">{org.desc[ui.lang]}</p>{/if}
       <dl>
         <div><dt>{t.detail.location}</dt><dd>{org.uat}{org.county && org.county !== org.uat ? `, ${org.county}` : ''}</dd></div>
         <div><dt>{t.detail.reach}</dt><dd>{t.reach[org.reach]}</dd></div>
@@ -69,6 +69,7 @@
 
   {#if org.website || emails(org.contact).length}
     <div class="links">
+      <span class="lbl">{t.detail.contact}</span>
       {#if org.website}<a class="btn" href={org.website} target="_blank" rel="noopener">{t.detail.website} · {host(org.website)} ↗</a>{/if}
       {#each emails(org.contact) as e}<a href="mailto:{e}">{e}</a>{/each}
     </div>
@@ -97,7 +98,8 @@
   .clusters { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 4px; }
   .clusters li { font-size: 12px; display: flex; align-items: center; gap: 7px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-  .desc { font-size: 14px; line-height: 1.5; margin: 14px 0 4px; }
+  .desc { font-size: 14px; line-height: 1.5; margin: 0 0 4px; }
+  .lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6f75; font-weight: 600; }
   dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; padding: 12px; background: #F3F4F6; border-radius: var(--radius); }
   dl .wide { grid-column: 1 / -1; }
   dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6f75; }

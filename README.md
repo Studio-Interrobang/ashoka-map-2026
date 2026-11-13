@@ -11,10 +11,10 @@ Replaces the Flourish stories (EN 3713289 / RO 3743784).
 
 Option A (recommended, like Flourish):
 ```html
-<iframe data-ashoka-map src="https://razvanzamfi.github.io/ashoka-map-2026/?lang=ro" title="Harta Organizațiilor Changemaker 2026" style="width:100%;height:780px;border:0" loading="lazy" allow="fullscreen"></iframe>
-<script src="https://razvanzamfi.github.io/ashoka-map-2026/embed.js" async></script>
+<iframe data-ashoka-map src="https://studio-interrobang.github.io/ashoka-map-2026/?lang=ro" title="Harta Organizațiilor Changemaker 2026" style="width:100%;height:840px;border:0" loading="lazy" allow="fullscreen"></iframe>
+<script src="https://studio-interrobang.github.io/ashoka-map-2026/embed.js" async></script>
 ```
-Option B (iframe only): the same `<iframe>` without the script. It works at a fixed height of 780px.
+Option B (iframe only): the same `<iframe>` without the script. It works at a fixed height of 840px.
 
 ## Data
 

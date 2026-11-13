@@ -29,7 +29,7 @@ export interface Dataset {
 }
 
 export type Variant = 'zoom' | 'bloom' | 'choropleth' | 'dorling' | 'universe';
-export type GroupBy = 'none' | 'reach' | 'cluster' | 'county' | 'decade';
+export type GroupBy = 'reach' | 'cluster' | 'activity';
 
 export interface Lens {
   clusters: Cluster[];
@@ -46,4 +46,4 @@ export const CLUSTER_COLORS: Record<Cluster, string> = {
 };
 export const CLUSTERS: Cluster[] = ['C1', 'C2', 'C3', 'C4'];
 export const REACHES: Reach[] = ['Local', 'National', 'International'];
-export const ACTIVITIES = ['mobilisation', 'civic_ed', 'advocacy', 'research', 'watchdog', 'media', 'legal'];
+export const ACTIVITIES = ['mobilisation', 'civic_ed', 'advocacy', 'research', 'watchdog', 'media', 'legal', 'other'];
