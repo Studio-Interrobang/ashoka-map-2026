@@ -65,9 +65,7 @@
     if (l.activities.length) parts.push(`${t.lens.activities}: ${l.activities.map((a) => t.activity[a as keyof typeof t.activity]).join(', ')}`);
     if (l.county) parts.push(`${t.lens.county}: ${l.county}`);
     const n = orgs.filter((o) => matches(o, l)).length;
-    const view = ui.view === 'clusters' ? `${t.clusters} · ${t.groupBy.label}: ${t.groupBy[ui.groupBy]}` : t.map;
     return [
-      view,
       `${t.filtersLabel}: ${lensActive(l) ? parts.join(' · ') : t.noFilters}`,
       t.showing.replace('{n}', String(n)).replace('{total}', String(orgs.length)),
     ];
@@ -102,7 +100,7 @@
   <div class="content" inert={!!selectedOrg}>
     {#if ui.header}
       <header class="masthead">
-        <img class="logo" src="./avatars/logo.webp" alt="" width="56" height="56" />
+        <img class="logo" src="./avatars/logo.webp" alt="" width="76" height="76" />
         <div class="titles">
           <h1>{t.title}</h1>
           <p class="sub">{t.subtitle}</p>
@@ -184,13 +182,13 @@
 
   /* masthead: logo + title, subtitle, intro */
   .masthead { display: flex; align-items: center; gap: 12px; min-width: 0; padding-bottom: 8px; }
-  .logo { width: 56px; height: 56px; flex: none; }
+  .logo { width: 76px; height: 76px; flex: none; }
   .titles { flex: 1; min-width: 0; }
   h1 { font-size: 22px; font-weight: 800; color: var(--navy); margin: 0; line-height: 1.15; }
   .titles .sub { margin: 2px 0 0; font-size: 14px; font-weight: 700; color: var(--cyan-text); }
   .titles .intro { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; color: #4a5560; }
   .wide h1 { font-size: 26px; }
-  .wide .logo { width: 64px; height: 64px; }
+  .wide .logo { width: 84px; height: 84px; }
 
   /* toolbar: search · views · language */
   .toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 34px; }
@@ -235,7 +233,7 @@
 
   /* phones */
   .narrow .content { padding: 8px; gap: 6px; }
-  .narrow .logo { width: 40px; height: 40px; }
+  .narrow .logo { width: 52px; height: 52px; }
   .narrow h1 { font-size: 17px; }
   .narrow .titles .sub { font-size: 12.5px; }
   .narrow .toolbar { flex-wrap: wrap; row-gap: 6px; }

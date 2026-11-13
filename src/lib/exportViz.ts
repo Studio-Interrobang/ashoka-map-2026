@@ -116,8 +116,8 @@ export async function buildSvg(o: ExportOpts) {
   // header
   let y = pad;
   let head = '';
-  if (logo) head += `<image href="${logo}" x="${pad}" y="${y}" width="52" height="52"/>`;
-  const tx = logo ? pad + 66 : pad;
+  if (logo) head += `<image href="${logo}" x="${pad}" y="${y - 6}" width="64" height="64"/>`;
+  const tx = logo ? pad + 78 : pad;
   head += `<text x="${tx}" y="${y + 24}" font-size="22" font-weight="800" fill="#003F72">${esc(o.title)}</text>`;
   head += `<text x="${tx}" y="${y + 45}" font-size="14" font-weight="700" fill="#0074b0">${esc(o.subtitle)}</text>`;
   y += 52 + 18;
