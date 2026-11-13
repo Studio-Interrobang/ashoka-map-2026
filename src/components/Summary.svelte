@@ -14,7 +14,7 @@
 <section class="band" aria-label="Summary">
   <div class="total">
     <span class="num">{shown.length}</span>
-    <span class="lbl">{shown.length === orgs.length ? '' : `${t.of} ${orgs.length} `}{t.organisations}</span>
+    <span class="lbl">{t.orgsLabel(shown.length, orgs.length)}</span>
   </div>
   <ul class="clusters" aria-label={t.lens.clusters}>
     {#each mix as m}

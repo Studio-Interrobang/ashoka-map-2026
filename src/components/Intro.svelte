@@ -6,7 +6,7 @@
   import { packEqual, fitProjection, zoomSpread } from '../lib/layouts';
   import { ui } from '../lib/state.svelte';
   import { CLUSTERS, CLUSTER_COLORS, REACHES, type Org } from '../lib/types';
-  import type { Dict } from '../lib/i18n';
+  import { deRo, type Dict } from '../lib/i18n';
 
   /**
    * "How to read" walkthrough, shown as a pop-up over the app:
@@ -30,9 +30,11 @@
 
   // ---- data-driven copy ----
   const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
+  // {k} → value; {de:k} → value + Romanian "de" where grammar needs it
+  const val = (v: Record<string, string | number>, k: string, de: boolean) => `${v[k] ?? ''}${de && typeof v[k] === 'number' ? ' ' + deRo(v[k] as number).trim() : ''}`.trimEnd();
+  const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(de:)?(\w+)\}/g, (_, de, k) => val(v, k, !!de));
   /** same, as HTML with every figure in bold (values come from the sheet, so they are escaped) */
-  const fillBold = (s: string, v: Record<string, string | number>) => esc(s).replace(/\{(\w+)\}/g, (_, k) => `<strong>${esc(String(v[k] ?? ''))}</strong>`);
+  const fillBold = (s: string, v: Record<string, string | number>) => esc(s).replace(/\{(de:)?(\w+)\}/g, (_, de, k) => `<strong>${esc(val(v, k, !!de))}</strong>`);
   let stats = $derived.by(() => {
     const byUat = new Map<string, number>();
     for (const o of orgs) byUat.set(o.uat, (byUat.get(o.uat) ?? 0) + 1);

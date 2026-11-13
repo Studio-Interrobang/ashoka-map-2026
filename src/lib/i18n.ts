@@ -1,7 +1,12 @@
 import type { Lang } from './types';
 
 // NOTE: RO cluster names + popup labels come from the live Flourish RO story; report facts in RO are still draft translations.
+/** Romanian puts "de" between a number and its noun from 20 up (20, 33, 127 → "de"; 1–19, 101–119 → none). */
+export const deRo = (n: number) => (n >= 20 && (n % 100 === 0 || n % 100 >= 20) ? 'de ' : '');
+
 const en = {
+  /** label under / after the big count: "organisations" or "of 127 organisations" */
+  orgsLabel: (shown: number, total: number) => (shown === total ? 'organisations' : `of ${total} organisations`),
   title: 'Changemaking Organization Map 2026',
   subtitle: 'Explore Romanian “Civic forest”',
   intro: 'Discover who is building democracy and civic engagement in Romania — and find the partners, allies, and experts working alongside you.',
@@ -112,9 +117,10 @@ const en = {
 };
 
 const ro: typeof en = {
+  orgsLabel: (shown: number, total: number) => (shown === total ? `${deRo(shown)}organizații` : `din ${total} ${deRo(total)}organizații`),
   title: 'Harta Organizațiilor Changemaker 2026',
   subtitle: 'Explorează „Pădurea civică” a României',
-  intro: 'Descoperă cine lucrează la dezvoltarea democrației și participării civice în România și identificați partenerii, aliații și experții care pot lucra alături de tine.',
+  intro: 'Descoperă cine lucrează la dezvoltarea democrației și participării civice în România și identifică partenerii, aliații și experții care pot lucra alături de tine.',
   map: 'Hartă',
   clusters: 'Clustere',
   table: 'Tabel',
@@ -139,26 +145,26 @@ const ro: typeof en = {
   clusterShort: { C1: 'Procese democratice', C2: 'Participare civică', C3: 'Anti-polarizare', C4: 'Changemaker-makers' },
   reach: { Local: 'Local', National: 'Național', International: 'Internațional' },
   activity: {
-    mobilisation: 'Organizare comunitară',
+    mobilisation: 'Mobilizare socială / organizare comunitară',
     civic_ed: 'Educație civică',
-    advocacy: 'Advocacy',
+    advocacy: 'Advocacy și influențarea politicilor publice',
     research: 'Cercetare și analiză',
-    watchdog: 'Watchdog',
-    media: 'Media și jurnalism',
-    legal: 'Suport juridic',
+    watchdog: 'Watchdog / monitorizarea instituțiilor publice',
+    media: 'Media / jurnalism cetățenesc',
+    legal: 'Suport juridic / litigii strategice',
     other: 'Altă activitate legată de democrație sau societatea civilă',
   },
   outcome: {
-    engagement: 'Implicare civică',
-    mindsets: 'Schimbare de mentalități',
-    policy: 'Politici publice mai bune',
-    access: 'Acces la servicii',
-    scaling: 'Modele scalate',
-    quality: 'Calitatea vieții',
-    leaders: 'Lideri noi',
-    partnerships: 'Parteneriate',
+    engagement: 'Implicare civică crescută',
+    mindsets: 'Schimbări de mentalitate',
+    policy: 'Politici publice îmbunătățite',
+    access: 'Acces la servicii și resurse',
+    scaling: 'Programe scalate sau replicate',
+    quality: 'Calitatea vieții beneficiarilor',
+    leaders: 'Lideri și changemakers noi',
+    partnerships: 'Colaborări și parteneriate',
     digital: 'Soluții digitale',
-    visibility: 'Vizibilitate publică',
+    visibility: 'Vizibilitate în discursul public',
     decisions: 'Decizii publice',
   },
   detail: {
@@ -184,9 +190,9 @@ const ro: typeof en = {
   geoCredit: 'Limite © geo-spatial.org (CC BY-SA)',
   facts: {
     clusters: '92% dintre organizații urmăresc o schimbare sistemică.',
-    reach: '58% au influențat politici publice la nivel național.',
+    reach: '58% au influențat politicile publice la nivel național.',
     activities: 'Mobilizarea socială (71%) și educația civică (68%) sunt cele mai frecvente activități.',
-    county: '91% activează în mediul urban; munca civică din rural e adesea informală și greu de cartografiat.',
+    county: '91% își au sediul în mediul urban; activitatea civică din mediul rural este adesea informală și mai greu de cartografiat.',
   },
   variants: {
     zoom: 'Puncte cu zoom',
@@ -195,17 +201,17 @@ const ro: typeof en = {
     dorling: 'Cercuri pe județe',
     universe: 'Universul organizațiilor',
   },
-  zoomHint: 'Folosește scroll sau pinch pentru zoom',
+  zoomHint: 'Folosește rotița mouse-ului sau două degete pentru zoom',
   zoomIn: 'Mărește',
-  // RO walkthrough copy: draft translation, to be confirmed by Ashoka
+  // {de:x} renders the number followed by "de" when Romanian grammar needs it (see deRo)
   walk: {
     kicker: 'Cum citești harta',
     steps: [
-      { title: 'Patru clustere, patru texturi', text: 'Fiecare domeniu de activitate civică are propria culoare și textură. Împreună formează avatarurile.' },
-      { title: 'Fiecare organizație are un avatar', text: 'Avatarul combină texturile clusterelor în care activează organizația.' },
-      { title: 'Mărimea arată aria de acțiune', text: 'Cu cât inelul texturat e mai larg, cu atât activitatea ajunge mai departe: {local} organizații locale, {national} naționale și {intl} internaționale.' },
-      { title: '{n} organizații', text: 'Împreună formează „Pădurea civică” a României. {multi} dintre ele combină două sau mai multe clustere.' },
-      { title: 'În {counties} de județe', text: 'Fiecare avatar stă acolo unde își are sediul organizația. {top} este cel mai mare centru, cu {topN} organizații.' },
+      { title: 'Patru clustere, patru texturi', text: 'Fiecare domeniu de activitate civică are propria culoare și textură. Din ele se construiesc avatarurile.' },
+      { title: 'Fiecare organizație are un avatar', text: 'Avatarul îmbină texturile clusterelor în care activează organizația.' },
+      { title: 'Mărimea arată aria de acțiune', text: 'Cu cât inelul texturat este mai larg, cu atât activitatea ajunge mai departe: {de:local} organizații locale, {de:national} naționale și {de:intl} internaționale.' },
+      { title: '{de:n} organizații', text: 'Împreună formează „Pădurea civică” a României. {multi} dintre ele activează în două sau mai multe clustere.' },
+      { title: 'În {de:counties} județe', text: 'Fiecare avatar este plasat acolo unde își are sediul organizația. {top} este cel mai mare centru, cu {de:topN} organizații.' },
     ],
     skip: 'Sari peste',
     next: 'Înainte',

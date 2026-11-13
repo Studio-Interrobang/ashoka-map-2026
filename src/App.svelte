@@ -59,6 +59,7 @@
     ui.lang; ui.view; ui.variant; ui.selected;
     syncUrl();
     document.documentElement.lang = ui.lang;
+    document.title = `${t.title} · Ashoka ${ui.lang === 'ro' ? 'România' : 'Romania'}`;
   });
 
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
@@ -92,7 +93,7 @@
           title: t.title, subtitle: t.subtitle, lines: describe(),
           summary: {
             total: shownN,
-            label: `${shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}${t.organisations}`,
+            label: t.orgsLabel(shownN, orgs.length),
             clusters: CLUSTERS.map((c) => ({ c, n: orgs.filter((o) => matches(o, ui.lens) && o.clusters.includes(c)).length, name: t.cluster[c], tone: TONE[c] })),
           },
           footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
@@ -153,7 +154,7 @@
 
     <div class="filters">
       {#if narrow && orgs.length}
-        <div class="kpi"><span class="num">{shownN}</span><span class="lbl">{shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}{t.organisations}</span></div>
+        <div class="kpi"><span class="num">{shownN}</span><span class="lbl">{t.orgsLabel(shownN, orgs.length)}</span></div>
       {/if}
       <Lenses {orgs} {t} {narrow} {hide} />
       {#if ui.view === 'clusters'}
