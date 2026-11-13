@@ -31,6 +31,9 @@
   // ---- zoomable variant ----
   let zt = $state({ k: 1, x: 0, y: 0 });
   let zooming = $state(false);
+  // skip the fly-in on first paint (avoids nodes animating from a pre-measurement layout)
+  let ready = $state(false);
+  $effect(() => { if (layout && !ready) setTimeout(() => (ready = true), 400); });
   let spread = $state(new Map<string, { x: number; y: number }>());
   let svgEl: SVGSVGElement | undefined = $state();
   let zb: ZoomBehavior<SVGSVGElement, unknown> | null = null;
@@ -132,7 +135,7 @@
       </g>
 
       <!-- organisations -->
-      <g class="nodes" class:animate={!zooming}>
+      <g class="nodes" class:animate={ready && !zooming}>
         {#each orgs as o (o.id)}
           {@const p = pos(o)}
           {#if p}
