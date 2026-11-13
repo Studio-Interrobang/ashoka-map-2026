@@ -16,6 +16,8 @@ function readParams() {
     variant: VARIANTS.includes(v) ? v : ('zoom' as Variant),
     selected: get('org'),
     lab: p.get('lab') === '1',
+    /** walkthrough: '1' always opens, '0' never auto-opens, otherwise first visit only */
+    intro: get('intro'),
   };
 }
 
@@ -29,6 +31,8 @@ export const ui = $state({
   selected: init.selected as string | null,
   hovered: null as string | null,
   lab: init.lab,
+  intro: false,
+  introParam: init.intro as string | null,
   /** ?header=0 hides the embed's own logo + title (the host page already has one) */
   header: new URLSearchParams(location.search).get('header') !== '0',
   lens: { clusters: [], reach: [], activities: [], county: '' } as Lens,

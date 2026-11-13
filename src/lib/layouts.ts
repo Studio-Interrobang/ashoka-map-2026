@@ -35,7 +35,7 @@ export function fitProjection(counties: Counties, x0: number, y0: number, x1: nu
 const byAvatar = (a: Org, b: Org) => a.avatar.localeCompare(b.avatar);
 
 /** Pack a set of equal circles; returns offsets relative to enclosing circle centre. */
-function packEqual(orgs: Org[], r: number, gap = 0.8) {
+export function packEqual(orgs: Org[], r: number, gap = 0.8) {
   const circles = [...orgs].sort(byAvatar).map((o) => ({ id: o.id, r: r + gap, x: 0, y: 0 }));
   packSiblings(circles);
   const enc = circles.length ? packEnclose(circles)! : { x: 0, y: 0, r: 0 };

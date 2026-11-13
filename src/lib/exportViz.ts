@@ -246,9 +246,8 @@ function save(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
-export async function exportViz(fmt: 'svg' | 'png', o: ExportOpts) {
+export async function exportViz(fmt: 'png' | 'jpg', o: ExportOpts) {
   const { svg, W, H } = await buildSvg(o);
-  if (fmt === 'svg') return save(new Blob([svg], { type: 'image/svg+xml' }), `${o.filename}.svg`);
   const img = new Image();
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   await img.decode();
@@ -259,6 +258,6 @@ export async function exportViz(fmt: 'svg' | 'png', o: ExportOpts) {
   const ctx = canvas.getContext('2d')!;
   ctx.scale(scale, scale);
   ctx.drawImage(img, 0, 0);
-  const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
-  if (blob) save(blob, `${o.filename}.png`);
+  const blob = await new Promise<Blob | null>((res) => (fmt === 'jpg' ? canvas.toBlob(res, 'image/jpeg', 0.92) : canvas.toBlob(res, 'image/png')));
+  if (blob) save(blob, `${o.filename}.${fmt}`);
 }

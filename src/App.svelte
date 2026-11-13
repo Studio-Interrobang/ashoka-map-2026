@@ -6,6 +6,7 @@
   import Table from './components/Table.svelte';
   import Summary from './components/Summary.svelte';
   import Search from './components/Search.svelte';
+  import Intro from './components/Intro.svelte';
   import { loadAll, type Counties } from './lib/data';
   import { ui, syncUrl, matches, lensActive } from './lib/state.svelte';
   import { exportViz } from './lib/exportViz';
@@ -42,6 +43,10 @@
       const r = await loadAll();
       orgs = r.data.orgs;
       counties = r.counties;
+      // walkthrough: ?intro=1 always, ?intro=0 never, otherwise once per browser
+      let seen = false;
+      try { seen = localStorage.getItem('ashokaIntroSeen') === '1'; } catch { /* blocked storage */ }
+      if (ui.introParam === '1' || (ui.introParam !== '0' && !seen)) openIntro();
     } catch (e) {
       error = String(e);
     }
@@ -57,6 +62,7 @@
   });
 
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
+  function openIntro() { ui.selected = null; ui.intro = true; }
 
   // ---- download (Map / Clusters) ----
   let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null }; withFullView: <T>(fn: () => Promise<T>) => Promise<T>; setExportSize: (s: { w: number; h: number } | null) => Promise<void> } | undefined>();
@@ -73,7 +79,7 @@
       `${t.filtersLabel}: ${lensActive(l) ? parts.join(' · ') : t.noFilters}`,
     ];
   }
-  async function download(fmt: 'png' | 'svg') {
+  async function download(fmt: 'png' | 'jpg') {
     dlOpen = false;
     const ref = stageRef;
     if (!ref) return;
@@ -112,7 +118,7 @@
 <svelte:window onclick={(e) => { if (!(e.target as HTMLElement).closest('.dl')) dlOpen = false; }} />
 
 <div class="app" class:narrow class:wide bind:clientWidth={appW}>
-  <div class="content" inert={!!selectedOrg}>
+  <div class="content" inert={!!selectedOrg || ui.intro}>
     {#if ui.header}
       <header class="masthead">
         <img class="logo" src="./avatars/logo.webp" alt="" width="76" height="76" style={!narrow && titlesH ? `width:${titlesH}px;height:${titlesH}px` : ""} />
@@ -130,6 +136,10 @@
         <button role="tab" aria-selected={ui.view === 'clusters'} onclick={() => (ui.view = 'clusters')}>{t.clusters}</button>
         <button role="tab" aria-selected={ui.view === 'table'} onclick={() => (ui.view = 'table')}>{t.table}</button>
       </div>
+      <button class="howto" onclick={openIntro} title={t.howTo} aria-label={t.howTo}>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M6.6 5.4v5.2L10.8 8z" fill="currentColor" stroke="none"/></svg>
+        {#if !narrow}<span>{t.howTo}</span>{/if}
+      </button>
       <label class="lang" title={t.language}>
         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c2 2.2 2 10.8 0 13M8 1.5c-2 2.2-2 10.8 0 13"/></svg>
         <select bind:value={ui.lang} aria-label={t.language}><option value="ro">RO</option><option value="en">EN</option></select>
@@ -176,7 +186,7 @@
             {#if dlOpen}
               <div class="dl-menu" role="menu">
                 <button role="menuitem" onclick={() => download('png')}>PNG</button>
-                <button role="menuitem" onclick={() => download('svg')}>SVG</button>
+                <button role="menuitem" onclick={() => download('jpg')}>JPG</button>
               </div>
             {/if}
             <button class="dl-btn" aria-expanded={dlOpen} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
@@ -191,6 +201,7 @@
   </div>
 
   {#if selectedOrg}<Detail org={selectedOrg} {t} {narrow} />{/if}
+  {#if ui.intro && counties && orgs.length}<Intro {orgs} {counties} {t} {narrow} />{/if}
 </div>
 
 <style>
@@ -239,6 +250,9 @@
   footer .row { display: flex; align-items: center; gap: 14px; white-space: nowrap; min-width: 0; }
   footer .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   footer a { color: var(--navy); font-weight: 700; flex: none; }
+
+  .howto { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 30px; padding: 0 6px; border: none; background: none; font: inherit; font-size: 12px; font-weight: 600; color: #4a5560; cursor: pointer; }
+  .howto:hover { color: var(--navy); }
 
   /* language: quiet globe dropdown so the view tabs lead */
   .lang { position: relative; display: inline-flex; align-items: center; gap: 4px; flex: none; color: #4a5560; font-size: 12px; padding: 0 4px; height: 30px; cursor: pointer; }

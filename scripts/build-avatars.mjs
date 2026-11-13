@@ -55,4 +55,11 @@ const logo = await sharp({ create: { width: S, height: S, channels: 4, backgroun
   ]).png().toBuffer();
 await sharp(logo).resize(192, 192).webp({ quality: 88, alphaQuality: 95 }).toFile(path.join(out, 'logo.webp'));
 await sharp(logo).resize(512, 512).png().toFile(path.resolve('public/logo.png'));
-console.log('Built cluster icons + logo');
+// quad-C1..C4: each logo slice alone on a full-size transparent canvas (stacked, they form the logo) for the walkthrough
+const quads = { C1: [b1, 0, 0], C2: [b2, half, 0], C3: [c3, half, half], C4: [b4, 0, half] };
+for (const [k, [buf, left, top]] of Object.entries(quads)) {
+  const layer = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([{ input: await q(buf, left, top), left, top }]).png().toBuffer();
+  await sharp(layer).resize(320, 320).webp({ quality: 85, alphaQuality: 90 }).toFile(path.join(out, `quad-${k}.webp`));
+}
+console.log('Built cluster icons + logo + quad slices');

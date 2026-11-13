@@ -16,6 +16,11 @@ Option A (recommended, like Flourish):
 ```
 Option B (iframe only): the same `<iframe>` without the script. It works at a fixed height of 840px.
 
+URL options for the `src`:
+- `lang=ro` / `lang=en`: starting language (the globe dropdown stays visible).
+- `header=0`: hide the embed's own logo, title and intro (when the page already has them).
+- `intro=1`: always open the "How to read" walkthrough on load. `intro=0`: never open it automatically. By default it opens once per browser; the "How to read" button replays it.
+
 ## Data
 
 The Google Sheet stays the single source of truth. Only the **Map data** tab is read; the Survey data tab (with personal data) is never touched.
