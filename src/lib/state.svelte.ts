@@ -27,7 +27,6 @@ export const ui = $state({
   selected: init.selected as string | null,
   hovered: null as string | null,
   lab: init.lab,
-  textured: new URLSearchParams(location.search).get('style') === 'textured',
   lens: { clusters: [], reach: [], activities: [], county: '' } as Lens,
 });
 

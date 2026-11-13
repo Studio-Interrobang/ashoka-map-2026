@@ -154,7 +154,7 @@
               onclick={() => (ui.selected = o.id)}
               onkeydown={(e) => onKey(e, o.id)}
             >
-              <Avatar org={o} r={p.r} detailed={ui.textured || p.r >= 22} />
+              <Avatar org={o} r={p.r} detailed={false} />
               {#if ui.selected === o.id}<circle r={p.r + 3} class="sel-ring" />{/if}
             </g>
           {/if}

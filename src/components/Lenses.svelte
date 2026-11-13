@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ui, toggle, clearLens, lensActive } from '../lib/state.svelte';
-  import { CLUSTERS, REACHES, ACTIVITIES, CLUSTER_COLORS, type Org } from '../lib/types';
+  import { REACHES, ACTIVITIES, type Org } from '../lib/types';
   import type { Dict } from '../lib/i18n';
 
   let { orgs, t }: { orgs: Org[]; t: Dict } = $props();
@@ -21,16 +21,6 @@
 <svelte:window onclick={onWindowClick} onkeydown={(e) => e.key === 'Escape' && (open = null)} />
 
 <div class="bar">
-  <!-- cluster chips always visible: primary lens -->
-  <div class="chips" role="group" aria-label={t.lens.clusters}>
-    {#each CLUSTERS as c}
-      <button class="chip" class:on={ui.lens.clusters.includes(c)} aria-pressed={ui.lens.clusters.includes(c)} onclick={() => toggle(ui.lens.clusters, c)} title={t.cluster[c]}>
-        <span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}
-        <span class="n">{count((o) => o.clusters.includes(c))}</span>
-      </button>
-    {/each}
-  </div>
-
   <div class="more">
     {#each ['reach', 'activities', 'county'] as const as k}
       <div class="lens">
@@ -65,15 +55,14 @@
 
 <style>
   .bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
-  .chips, .more { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .more { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   button { font: inherit; cursor: pointer; }
-  .chip, .drop {
+  .drop {
     display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--radius);
     border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 12.5px; white-space: nowrap;
   }
-  .chip:hover, .drop:hover { border-color: var(--navy); }
-  .chip.on, .drop.on { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff; }
+  .drop:hover { border-color: var(--navy); }
+  .drop.on { background: var(--navy); color: #fff; border-color: var(--navy); }
   .n { font-size: 11px; opacity: 0.6; font-variant-numeric: tabular-nums; }
   .badge { background: var(--cyan); color: #fff; border-radius: var(--radius-sm); font-size: 10.5px; padding: 0 6px; }
   .caret { font-size: 10px; opacity: 0.6; }
@@ -89,7 +78,6 @@
   input { accent-color: var(--navy); }
   .clear { border: none; background: none; color: var(--navy); font-size: 12px; text-decoration: underline; }
   @media (max-width: 560px) {
-    .chips { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 2px; scrollbar-width: none; }
     .pop { position: fixed; left: 12px; right: 12px; top: auto; }
   }
 </style>

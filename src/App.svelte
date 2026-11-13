@@ -20,7 +20,6 @@
   let appW = $state(0);
   let t = $derived(dict(ui.lang));
   let selectedOrg = $derived(orgs.find((o) => o.id === ui.selected) ?? null);
-  let wide = $derived(appW >= 980);
 
   onMount(async () => {
     try {
@@ -45,6 +44,7 @@
 <div class="app" bind:clientWidth={appW}>
   <header>
     <div class="brand">
+      <img class="logo" src="./avatars/logo.webp" alt="" width="44" height="44" />
       <div>
         <h1>{t.title}</h1>
         <p>{t.subtitle}</p>
@@ -69,9 +69,6 @@
       {#each variants as v}
         <button class:on={ui.variant === v} onclick={() => { ui.variant = v; ui.view = 'map'; }}>{t.variants[v]}</button>
       {/each}
-      <span class="sep"></span>
-      <button class:on={!ui.textured} onclick={() => (ui.textured = false)}>Simple discs</button>
-      <button class:on={ui.textured} onclick={() => (ui.textured = true)}>Textured avatars</button>
       {#if ui.variant === 'universe'}
         <span class="sep"></span>
         <label>{t.groupBy.label}
@@ -81,7 +78,9 @@
     </div>
   {/if}
 
-  <main class:wide>
+  {#if orgs.length}<Summary {orgs} {t} />{/if}
+
+  <main>
     <section class="card main">
       <div class="lenses"><Lenses {orgs} {t} /></div>
       <div class="stage-wrap" bind:clientWidth={sw} bind:clientHeight={sh}>
@@ -96,11 +95,7 @@
         {/if}
         {#if selectedOrg}<Detail org={selectedOrg} {t} />{/if}
       </div>
-      {#if !wide && orgs.length}<div class="strip"><Summary {orgs} {t} /></div>{/if}
     </section>
-    {#if wide && orgs.length}
-      <aside class="card side"><Summary {orgs} {t} vertical /></aside>
-    {/if}
   </main>
 
   <footer>
@@ -113,7 +108,8 @@
 <style>
   .app { height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 10px; box-sizing: border-box; background: #fff; color: var(--ink); }
   header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--navy); padding-bottom: 10px; border-bottom: 2px solid var(--navy); }
-  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo { width: 44px; height: 44px; flex: none; }
   h1 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
   .brand p { margin: 1px 0 0; font-size: 13px; font-weight: 300; color: #4a5560; }
   .tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -128,13 +124,10 @@
   .lab-bar select { font: inherit; font-size: 12px; margin-left: 6px; border-radius: 6px; }
   .sep { width: 1px; height: 18px; background: #D5D9DE; margin: 0 4px; }
   main { flex: 1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  main.wide { grid-template-columns: minmax(0, 1fr) 250px; }
   .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); min-height: 0; min-width: 0; }
   .main { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
-  .side { padding: 18px 16px; overflow: auto; background: #F3F4F6; border-color: #F3F4F6; }
   .stage-wrap { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
   .lenses { min-width: 0; }
-  .strip { border-top: 1px solid #ECEEF1; padding-top: 8px; }
   .msg { display: grid; place-items: center; height: 100%; margin: 0; color: #666; }
   .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #E1E4E8; border-top-color: var(--cyan); animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
