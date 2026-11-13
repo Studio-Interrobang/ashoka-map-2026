@@ -17,9 +17,19 @@
   let error = $state('');
   let sw = $state(0);
   let sh = $state(0);
-  let appW = $state(0);
+  let appW = $state(1000);
   let t = $derived(dict(ui.lang));
   let selectedOrg = $derived(orgs.find((o) => o.id === ui.selected) ?? null);
+  let narrow = $derived(appW < 600);
+  let wide = $derived(appW >= 1000);
+
+  let fact = $derived(
+    ui.lens.county ? t.facts.county
+    : ui.lens.activities.length ? t.facts.activities
+    : ui.lens.reach.length ? t.facts.reach
+    : ui.lens.clusters.length ? t.facts.clusters
+    : t.facts.default,
+  );
 
   onMount(async () => {
     try {
@@ -43,18 +53,18 @@
   const groupings: GroupBy[] = ['none', 'reach', 'cluster', 'county', 'decade'];
 </script>
 
-<div class="app" bind:clientWidth={appW}>
-  <header>
-    <div class="brand">
-      <img class="logo" src="./avatars/logo.webp" alt="" width="44" height="44" />
-      <div>
-        <h1>{t.title}</h1>
-        <p>{t.subtitle}</p>
-      </div>
-    </div>
-    <div class="tools">
-      <div class="search-slot"><Search {orgs} {t} /></div>
-      <div class="seg" role="tablist" aria-label="View">
+<div class="app" class:narrow class:wide bind:clientWidth={appW}>
+  <div class="content" inert={!!selectedOrg}>
+    <header class="toolbar">
+      {#if ui.header}
+        <img class="logo" src="./avatars/logo.webp" alt="" width="28" height="28" />
+        <div class="titles">
+          <h1>{t.title}</h1>
+          {#if wide}<p>{t.subtitle}</p>{/if}
+        </div>
+      {/if}
+      {#if wide || !ui.header}<div class="search-slot"><Search {orgs} {t} /></div>{/if}
+      <div class="seg tabs" role="tablist" aria-label="View">
         <button role="tab" aria-selected={ui.view === 'map'} onclick={() => (ui.view = 'map')}>{t.map}</button>
         <button role="tab" aria-selected={ui.view === 'clusters'} onclick={() => (ui.view = 'clusters')}>{t.clusters}</button>
         <button role="tab" aria-selected={ui.view === 'table'} onclick={() => (ui.view = 'table')}>{t.table}</button>
@@ -63,79 +73,92 @@
         <button aria-pressed={ui.lang === 'ro'} onclick={() => (ui.lang = 'ro')}>RO</button>
         <button aria-pressed={ui.lang === 'en'} onclick={() => (ui.lang = 'en')}>EN</button>
       </div>
+    </header>
+
+    {#if orgs.length}<Summary {orgs} {t} />{:else}<div class="strip-ph"></div>{/if}
+
+    <div class="filters">
+      {#if !wide && ui.header}<div class="search-slot"><Search {orgs} {t} /></div>{/if}
+      <Lenses {orgs} {t} {narrow} />
+      {#if ui.view === 'clusters'}
+        <label class="groupby">{#if !narrow}{t.groupBy.label}{/if}
+          <select bind:value={ui.groupBy} aria-label={t.groupBy.label}>{#each groupings as g}<option value={g}>{t.groupBy[g]}</option>{/each}</select>
+        </label>
+      {/if}
     </div>
-  </header>
 
-  {#if orgs.length}<Summary {orgs} {t} />{/if}
+    <div class="stage-wrap" bind:clientWidth={sw} bind:clientHeight={sh}>
+      {#if error}
+        <p class="msg">Could not load data. {error}</p>
+      {:else if !counties}
+        <div class="msg"><span class="spinner"></span></div>
+      {:else if ui.view !== 'table'}
+        <Stage {orgs} {counties} w={sw} h={sh} {t} />
+      {:else}
+        <Table {orgs} {t} />
+      {/if}
+      {#if ui.view === 'map' && orgs.length && !narrow}<p class="fact caption">{fact}</p>{/if}
+    </div>
+    {#if ui.view !== 'map' && !narrow}<p class="fact row">{fact}</p>{/if}
 
-  <main>
-    <section class="card main">
-      <div class="lenses">
-        <Lenses {orgs} {t} />
-        {#if ui.view === 'clusters'}
-          <label class="groupby">{t.groupBy.label}
-            <select bind:value={ui.groupBy}>{#each groupings as g}<option value={g}>{t.groupBy[g]}</option>{/each}</select>
-          </label>
-        {/if}
-      </div>
-      <div class="stage-wrap" bind:clientWidth={sw} bind:clientHeight={sh}>
-        {#if error}
-          <p class="msg">Could not load data. {error}</p>
-        {:else if !counties}
-          <div class="msg"><span class="spinner"></span></div>
-        {:else if ui.view !== 'table'}
-          <Stage {orgs} {counties} w={sw} h={sh} {t} />
-        {:else}
-          <Table {orgs} {t} />
-        {/if}
-        {#if selectedOrg}<Detail org={selectedOrg} {t} />{/if}
-      </div>
-    </section>
-  </main>
+    <footer>
+      <span class="src">{t.source}</span>
+      <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
+      {#if ui.view === 'map'}<span class="credit">{t.geoCredit}</span>{/if}
+    </footer>
+  </div>
 
-  <footer>
-    <span>{t.source}</span>
-    <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
-    <span class="credit">{t.geoCredit}</span>
-  </footer>
+  {#if selectedOrg}<Detail org={selectedOrg} {t} {narrow} />{/if}
 </div>
 
 <style>
-  .app { height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 10px; box-sizing: border-box; background: #fff; color: var(--ink); }
-  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--navy); padding-bottom: 10px; border-bottom: 2px solid var(--navy); }
-  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .logo { width: 44px; height: 44px; flex: none; }
-  h1 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
-  .brand p { margin: 1px 0 0; font-size: 13px; font-weight: 300; color: #4a5560; }
-  .tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .search-slot { width: 210px; }
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); padding: 2px; background: #fff; }
-  .seg button { font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: none; color: var(--navy); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
+  .app { position: relative; height: 100%; container-type: inline-size; background: #fff; color: var(--ink); overflow: hidden; }
+  .content {
+    height: 100%; box-sizing: border-box; padding: 10px 12px 8px;
+    display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; gap: 8px; min-width: 0;
+  }
+
+  /* toolbar: one 36px row */
+  .toolbar { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 36px; }
+  .logo { width: 28px; height: 28px; flex: none; }
+  .titles { flex: 1; min-width: 0; }
+  h1 { font-size: 15px; font-weight: 800; color: var(--navy); margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .titles p { margin: 0; font-size: 12px; color: #4a5560; font-weight: 300; }
+  .wide h1 { font-size: 17px; }
+  .search-slot { width: 190px; flex: none; }
+  .seg { display: inline-flex; flex: none; border: 1px solid var(--line); border-radius: var(--radius); padding: 2px; background: #fff; }
+  .seg button { font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: none; color: var(--navy); height: 28px; padding: 0 11px; border-radius: var(--radius-sm); cursor: pointer; }
   .seg button[aria-selected='true'], .seg button[aria-pressed='true'] { background: var(--navy); color: #fff; }
-  main { flex: 1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); min-height: 0; min-width: 0; }
-  .main { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
-  .lenses { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .groupby { font-size: 12px; color: #4a5560; display: flex; align-items: center; gap: 6px; }
-  .groupby select { font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
-  .stage-wrap { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
-  .lenses { min-width: 0; }
+
+  .filters { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
+  .filters .search-slot { width: 180px; }
+  .groupby { margin-left: auto; font-size: 12px; color: #4a5560; display: flex; align-items: center; gap: 6px; }
+  .groupby select { font: inherit; font-size: 12.5px; height: 30px; padding: 0 6px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+
+  .stage-wrap { position: relative; min-height: 0; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); }
+  .strip-ph { height: 70px; background: #F3F4F6; border-radius: var(--radius); }
   .msg { display: grid; place-items: center; height: 100%; margin: 0; color: #666; }
   .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #E1E4E8; border-top-color: var(--cyan); animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
-  footer { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 10.5px; color: #6b6f75; }
-  footer a { color: var(--navy); font-weight: 700; }
-  .credit { margin-left: auto; }
-  @media (max-width: 720px) {
-    .app { padding: 10px 10px 8px; gap: 8px; }
-    h1 { font-size: 16px; }
-    .brand p { font-size: 12px; }
-    .tools { width: 100%; }
-    .search-slot { flex: 1 1 100%; width: auto; }
-    .seg { flex: 1; }
-    .seg button { flex: 1; }
-    .seg.lang { flex: 0 0 auto; }
-    .main { padding: 8px; }
-    .credit { margin-left: 0; }
-  }
+
+  .fact { margin: 0; font-size: 12px; line-height: 1.35; color: #4a5560; border-left: 3px solid var(--cyan); padding: 3px 8px; }
+  .fact.caption { position: absolute; left: 10px; top: 10px; max-width: min(46%, 380px); background: rgba(255, 255, 255, 0.88); pointer-events: none; }
+  .fact.row:empty { display: none; }
+
+  footer { display: flex; gap: 14px; font-size: 10.5px; color: #6b6f75; white-space: nowrap; min-width: 0; }
+  footer .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  footer a { color: var(--navy); font-weight: 700; flex: none; }
+  .credit { margin-left: auto; flex: none; }
+
+  /* phones */
+  .narrow .content { padding: 8px; gap: 6px; }
+  .narrow .toolbar { flex-wrap: wrap; row-gap: 6px; }
+  .narrow .titles { flex: 1 1 0; }
+  .narrow h1 { font-size: 14px; }
+  .narrow .tabs { order: 3; flex: 1 1 100%; }
+  .narrow .tabs button { flex: 1; }
+  .narrow .filters .search-slot { flex: 1; width: auto; }
+  .narrow footer { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
+  .narrow .credit { margin-left: 0; }
+  .wide .content { padding: 12px 14px 10px; }
 </style>

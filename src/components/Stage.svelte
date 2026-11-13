@@ -233,5 +233,5 @@
   .tip span { opacity: 0.75; font-size: 11px; }
   .zoom-ctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
   .zoom-ctl button { width: 30px; height: 30px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-size: 18px; color: var(--navy); cursor: pointer; }
-  .hint { position: absolute; left: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
+  .hint { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
 </style>

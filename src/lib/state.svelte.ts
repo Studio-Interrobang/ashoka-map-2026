@@ -29,6 +29,8 @@ export const ui = $state({
   selected: init.selected as string | null,
   hovered: null as string | null,
   lab: init.lab,
+  /** ?header=0 hides the embed's own logo + title (the host page already has one) */
+  header: new URLSearchParams(location.search).get('header') !== '0',
   lens: { clusters: [], reach: [], activities: [], county: '' } as Lens,
 });
 
