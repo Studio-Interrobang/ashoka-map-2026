@@ -55,7 +55,7 @@
   .h { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; align-items: center; }
   .count { font-size: 13px; white-space: nowrap; }
   .count strong { font-size: 18px; color: var(--navy); }
-  .bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; }
+  .bar { display: flex; height: 8px; border-radius: var(--radius-sm); overflow: hidden; gap: 2px; }
   .bar span { transition: flex 0.4s; }
   .h .fact { grid-column: 1 / -1; font-size: 12px; }
   @media (max-width: 560px) { .h { grid-template-columns: 1fr; } }

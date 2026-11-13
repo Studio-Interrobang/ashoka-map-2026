@@ -115,36 +115,36 @@
 </div>
 
 <style>
-  .app { height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 10px; box-sizing: border-box; background: var(--navy); color: var(--ink); }
-  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: #fff; }
+  .app { height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 10px; box-sizing: border-box; background: #fff; color: var(--ink); }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--navy); padding-bottom: 10px; border-bottom: 2px solid var(--navy); }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo { width: 34px; height: 34px; flex: none; }
   h1 { font-size: 19px; font-weight: 800; margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
-  .brand p { margin: 1px 0 0; font-size: 13px; font-weight: 300; opacity: 0.85; }
+  .brand p { margin: 1px 0 0; font-size: 13px; font-weight: 300; color: #4a5560; }
   .tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .search-slot { width: 210px; }
-  .seg { display: inline-flex; background: rgba(255, 255, 255, 0.12); border-radius: 999px; padding: 3px; }
-  .seg button { font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: none; color: #fff; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
-  .seg button[aria-selected='true'], .seg button[aria-pressed='true'] { background: #fff; color: var(--navy); }
-  .lab-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: #fff; font-size: 12px; }
-  .lab-bar button { font: inherit; font-size: 12px; border: 1px dashed rgba(255,255,255,.5); background: none; color: #fff; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); padding: 2px; background: #fff; }
+  .seg button { font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: none; color: var(--navy); padding: 5px 12px; border-radius: var(--radius-sm); cursor: pointer; }
+  .seg button[aria-selected='true'], .seg button[aria-pressed='true'] { background: var(--navy); color: #fff; }
+  .lab-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--ink); font-size: 12px; background: #FFF6EA; border: 1px dashed var(--orange); border-radius: var(--radius); padding: 6px 8px; }
+  .lab-bar button { font: inherit; font-size: 12px; border: 1px solid #e6cfae; background: #fff; color: var(--ink); padding: 4px 10px; border-radius: var(--radius-sm); cursor: pointer; }
   .lab-bar button.on { background: var(--orange); border-color: var(--orange); color: #1b1b1b; font-weight: 700; }
-  .lab-tag { background: var(--orange); color: #1b1b1b; font-weight: 800; font-size: 10px; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.08em; }
+  .lab-tag { background: var(--orange); color: #1b1b1b; font-weight: 800; font-size: 10px; padding: 3px 6px; border-radius: var(--radius-sm); letter-spacing: 0.08em; }
   .lab-bar select { font: inherit; font-size: 12px; margin-left: 6px; border-radius: 6px; }
-  .sep { width: 1px; height: 18px; background: rgba(255,255,255,.3); margin: 0 4px; }
+  .sep { width: 1px; height: 18px; background: #e6cfae; margin: 0 4px; }
   main { flex: 1; min-height: 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   main.wide { grid-template-columns: minmax(0, 1fr) 250px; }
-  .card { background: #fff; border-radius: 18px; min-height: 0; min-width: 0; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); min-height: 0; min-width: 0; }
   .main { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
-  .side { padding: 18px 16px; overflow: auto; }
+  .side { padding: 18px 16px; overflow: auto; background: #F7F6F2; border-color: #F7F6F2; }
   .stage-wrap { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
   .lenses { min-width: 0; }
   .strip { border-top: 1px solid #EEEBE2; padding-top: 8px; }
   .msg { display: grid; place-items: center; height: 100%; margin: 0; color: #666; }
   .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #DAD7CB; border-top-color: var(--cyan); animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
-  footer { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 10.5px; color: rgba(255, 255, 255, 0.75); }
-  footer a { color: #fff; font-weight: 700; }
+  footer { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 10.5px; color: #6b6f75; }
+  footer a { color: var(--navy); font-weight: 700; }
   .credit { margin-left: auto; }
   @media (max-width: 720px) {
     .app { padding: 10px 10px 8px; gap: 8px; }
@@ -152,7 +152,7 @@
     .brand p { font-size: 12px; }
     .tools { width: 100%; }
     .search-slot { flex: 1; width: auto; }
-    .main { padding: 8px; border-radius: 14px; }
+    .main { padding: 8px; }
     .credit { margin-left: 0; }
   }
 </style>

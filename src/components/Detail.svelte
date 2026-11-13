@@ -48,11 +48,11 @@
   .scrim { position: absolute; inset: 0; z-index: 29; background: transparent; }
   .panel {
     position: absolute; top: 10px; right: 10px; bottom: 10px; width: min(340px, calc(100% - 20px)); z-index: 30;
-    background: #fff; border-radius: 16px; box-shadow: 0 14px 40px rgba(0, 30, 60, 0.28); padding: 18px 18px 16px;
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0, 30, 60, 0.14); padding: 18px 18px 16px;
     overflow: auto; animation: slide 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   @keyframes slide { from { transform: translateX(24px); opacity: 0; } }
-  .close { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #F3F1EA; cursor: pointer; color: var(--navy); }
+  .close { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: var(--radius); border: none; background: #F3F1EA; cursor: pointer; color: var(--navy); }
   .head { text-align: center; }
   .head img { display: block; margin: 4px auto 6px; }
   h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; }
@@ -67,13 +67,13 @@
   dd { margin: 2px 0 0; font-size: 13.5px; font-weight: 600; }
   h3 { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #777; margin: 14px 0 6px; font-weight: 600; }
   .tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .tags span { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--navy); color: #fff; }
+  .tags span { font-size: 12px; padding: 3px 8px; border-radius: var(--radius-sm); background: var(--navy); color: #fff; }
   .tags.light span { background: #EEF4F8; color: var(--navy); }
   .links { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px; }
   .links a { color: var(--navy); font-weight: 600; font-size: 13px; word-break: break-all; }
   @media (max-width: 560px) {
     .scrim { background: rgba(0, 20, 40, 0.35); }
-    .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82%; border-radius: 18px 18px 0 0; animation-name: up; }
+    .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82%; border-radius: var(--radius) var(--radius) 0 0; animation-name: up; }
     @keyframes up { from { transform: translateY(40px); opacity: 0; } }
   }
 </style>

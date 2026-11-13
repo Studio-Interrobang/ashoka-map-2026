@@ -68,22 +68,22 @@
   .chips, .more { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   button { font: inherit; cursor: pointer; }
   .chip, .drop {
-    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
-    border: 1px solid #DAD7CB; background: #fff; color: var(--ink); font-size: 12.5px; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--radius);
+    border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 12.5px; white-space: nowrap;
   }
   .chip:hover, .drop:hover { border-color: var(--navy); }
   .chip.on, .drop.on { background: var(--navy); color: #fff; border-color: var(--navy); }
   .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff; }
   .n { font-size: 11px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-  .badge { background: var(--cyan); color: #fff; border-radius: 999px; font-size: 10.5px; padding: 0 6px; }
+  .badge { background: var(--cyan); color: #fff; border-radius: var(--radius-sm); font-size: 10.5px; padding: 0 6px; }
   .caret { font-size: 10px; opacity: 0.6; }
   .lens { position: relative; }
   .pop {
     position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; min-width: 220px; background: #fff;
-    border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 30, 60, 0.22); padding: 8px; display: flex; flex-direction: column;
+    border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); padding: 6px; display: flex; flex-direction: column;
   }
   .pop .scroll { max-height: 240px; overflow: auto; display: flex; flex-direction: column; }
-  .pop label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .pop label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
   .pop label:hover { background: #F3F1EA; }
   .pop label .n { margin-left: auto; }
   input { accent-color: var(--navy); }

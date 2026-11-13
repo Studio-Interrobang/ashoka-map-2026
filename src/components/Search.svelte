@@ -45,14 +45,14 @@
 <style>
   .search { position: relative; }
   input {
-    width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 8px 12px 8px 32px; border-radius: 999px;
-    border: none; background: rgba(255, 255, 255, 0.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='6' cy='6' r='5'/%3E%3Cpath d='m10 10 3 3'/%3E%3C/svg%3E") no-repeat 11px center;
-    color: #fff; outline: none;
+    width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 7px 12px 7px 32px; border-radius: var(--radius);
+    border: 1px solid var(--line); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%23003F72' stroke-width='2'%3E%3Ccircle cx='6' cy='6' r='5'/%3E%3Cpath d='m10 10 3 3'/%3E%3C/svg%3E") no-repeat 11px center;
+    color: var(--ink); outline: none;
   }
-  input::placeholder { color: rgba(255, 255, 255, 0.7); }
-  input:focus { background-color: rgba(255, 255, 255, 0.24); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); }
-  ul { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40; list-style: none; margin: 0; padding: 6px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 30, 60, 0.3); min-width: 240px; }
-  li button { display: flex; gap: 8px; align-items: center; width: 100%; padding: 6px 8px; border: none; background: none; border-radius: 8px; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+  input::placeholder { color: #7a8088; }
+  input:focus { border-color: var(--navy); }
+  ul { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40; list-style: none; margin: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); min-width: 240px; }
+  li button { display: flex; gap: 8px; align-items: center; width: 100%; padding: 6px 8px; border: none; background: none; border-radius: var(--radius-sm); cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
   li button.hl, li button:hover { background: #F3F1EA; }
   li span { display: flex; flex-direction: column; font-size: 13px; }
   li small { color: #777; font-size: 11px; }

@@ -170,7 +170,7 @@
               <text x={g.x} y={g.y + g.r + 12} text-anchor="middle" class="glabel">{g.label} · {g.n}</text>
             {/if}
           {:else if ui.variant === 'dorling' && !g.empty && g.r > 14}
-            <text x={g.x} y={g.y + g.r + 11} text-anchor="middle" class="glabel">{g.label}{g.n > 1 ? ` · ${g.n}` : ''}</text>
+            <text x={g.x} y={g.y + g.r + 11 > h - 3 ? g.y - g.r - 5 : g.y + g.r + 11} text-anchor="middle" class="glabel">{g.label}{g.n > 1 ? ` · ${g.n}` : ''}</text>
           {:else if ui.variant === 'choropleth' && g.n >= 3}
             <text x={g.x} y={g.y + g.r + 11} text-anchor="middle" class="glabel">{g.label} · {g.n}</text>
           {:else if ui.variant === 'universe'}
@@ -218,11 +218,11 @@
   .gcount { font-size: 26px; font-weight: 800; fill: var(--cyan-text); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
   .tip {
     position: absolute; transform: translate(-50%, -100%); pointer-events: none;
-    background: var(--navy); color: #fff; padding: 5px 9px; border-radius: 6px; font-size: 12px;
+    background: var(--navy); color: #fff; padding: 5px 9px; border-radius: var(--radius-sm); font-size: 12px;
     white-space: nowrap; display: flex; flex-direction: column; line-height: 1.25; box-shadow: 0 4px 14px rgba(0,0,0,.2);
   }
   .tip span { opacity: 0.75; font-size: 11px; }
   .zoom-ctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
-  .zoom-ctl button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DAD7CB; background: #fff; font-size: 18px; color: var(--navy); cursor: pointer; }
+  .zoom-ctl button { width: 30px; height: 30px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-size: 18px; color: var(--navy); cursor: pointer; }
   .hint { position: absolute; left: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
 </style>
