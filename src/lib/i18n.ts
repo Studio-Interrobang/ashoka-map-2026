@@ -96,7 +96,7 @@ const en = {
     kicker: 'How to read the map',
     steps: [
       { title: 'Four clusters, four textures', text: 'Each area of civic work has its own colour and texture. Together they make up the avatars.' },
-      { title: 'Every organisation has an avatar', text: 'An avatar combines the textures of the clusters the organisation works in.' },
+      { title: 'Every organisation has an avatar', text: 'An organisation can work in one, two, three or all four clusters. Its avatar combines the textures of each one.' },
       { title: 'Size shows the scale of work', text: 'The wider the textured ring, the further the work reaches: {local} local, {national} national and {intl} international organisations.' },
       { title: '{n} organisations', text: 'Together they form Romania’s civic forest. {multi} of them combine two or more clusters.' },
       { title: 'Across {counties} counties', text: 'Each avatar sits where the organisation is based. {top} is the largest hub, with {topN} organisations.' },
@@ -208,7 +208,7 @@ const ro: typeof en = {
     kicker: 'Cum citești harta',
     steps: [
       { title: 'Patru clustere, patru texturi', text: 'Fiecare domeniu de activitate civică are propria culoare și textură. Din ele se construiesc avatarurile.' },
-      { title: 'Fiecare organizație are un avatar', text: 'Avatarul îmbină texturile clusterelor în care activează organizația.' },
+      { title: 'Fiecare organizație are un avatar', text: 'O organizație poate activa în unul, două, trei sau toate cele patru clustere. Avatarul ei îmbină texturile fiecăruia.' },
       { title: 'Mărimea arată aria de acțiune', text: 'Cu cât inelul texturat este mai larg, cu atât activitatea ajunge mai departe: {de:local} organizații locale, {de:national} naționale și {de:intl} internaționale.' },
       { title: '{de:n} organizații', text: 'Împreună formează „Pădurea civică” a României. {multi} dintre ele activează în două sau mai multe clustere.' },
       { title: 'În {de:counties} județe', text: 'Fiecare avatar este plasat acolo unde își are sediul organizația. {top} este cel mai mare centru, cu {de:topN} organizații.' },

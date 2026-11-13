@@ -16,7 +16,7 @@
   let { orgs, counties, t, narrow = false }: { orgs: Org[]; counties: Counties; t: Dict; narrow?: boolean } = $props();
 
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const DUR = [6500, 6500, 6500, 5500, 6500];
+  const DUR = [5200, 5000, 5000, 4300, 5200];
   const LAST = DUR.length - 1;
 
   let step = $state(0);
@@ -89,15 +89,15 @@
     const p = pack.pos.get(o.id)!;
     const i = order.get(o.id) ?? 0;
     if (step < 3) return `transform:translate(${p.x - pack.rp}px,${p.y - pack.rp}px) scale(.2);opacity:0;transition-delay:0ms`;
-    if (step === 3) return `transform:translate(${p.x - pack.rp}px,${p.y - pack.rp}px) scale(1);opacity:1;transition-delay:${i * 6}ms`;
+    if (step === 3) return `transform:translate(${p.x - pack.rp}px,${p.y - pack.rp}px) scale(1);opacity:1;transition-delay:${i * 4}ms`;
     const m = map.pos.get(o.id)!;
-    return `transform:translate(${m.x - pack.rp}px,${m.y - pack.rp}px) scale(${map.rm / pack.rp});opacity:1;transition-delay:${i * 5}ms`;
+    return `transform:translate(${m.x - pack.rp}px,${m.y - pack.rp}px) scale(${map.rm / pack.rp});opacity:1;transition-delay:${i * 3.5}ms`;
   }
 
   // ---- timeline ----
   $effect(() => {
     if (!started || step !== 0 || shown >= 4) return;
-    const id = setTimeout(() => shown++, shown === 0 ? 500 : 850);
+    const id = setTimeout(() => shown++, shown === 0 ? 350 : 650);
     return () => clearTimeout(id);
   });
   $effect(() => {
@@ -146,7 +146,7 @@
     <button class="x" bind:this={closeBtn} onclick={close} aria-label={t.detail.close}>✕</button>
   </div>
 
-  <div class="stage" bind:clientWidth={sw} bind:clientHeight={sh} aria-hidden="true">
+  <div class="stage" bind:clientWidth={sw} bind:clientHeight={sh} style="--sh:{sh}px" aria-hidden="true">
     <!-- 4/5: map -->
     {#if map}
       <svg class="counties" class:on={step === 4} width={sw} height={sh}>
@@ -172,7 +172,6 @@
           <figcaption>
             <strong>{o.short}</strong>
             {#each o.clusters as c}<span class="cl"><i style="background:{CLUSTER_COLORS[c]}"></i>{t.cluster[c]}</span>{/each}
-            <span class="city">{o.uat}</span>
           </figcaption>
         </figure>
       {/each}
@@ -181,7 +180,7 @@
     <!-- 2: scale of work -->
     <div class="row scale" class:on={step === 2}>
       {#each REACHES as r, i}
-        <figure style="transition-delay:{step === 2 ? i * 350 : 0}ms">
+        <figure style="transition-delay:{step === 2 ? i * 250 : 0}ms">
           <img src="./avatars/{scaleCombo}_{r}-l.webp" alt="" />
           <figcaption><strong>{t.reach[r]}</strong></figcaption>
         </figure>
@@ -208,7 +207,7 @@
     {#if step === 0}
       <ul class="legend">
         {#each CLUSTERS as c, i}
-          <li class:in={i < shown}><img src="./avatars/icon-{c}.webp" alt="" width="20" height="20" />{t.cluster[c]}</li>
+          <li class:in={i < shown}><img src="./avatars/icon-{c}.webp" alt="" width="34" height="34" />{t.cluster[c]}</li>
         {/each}
       </ul>
     {/if}
@@ -255,7 +254,7 @@
   .built.on { transform: translate(-50%, -50%) scale(1); }
   /* each slice grows gently out of the centre of the avatar */
   .built img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transform: scale(0.55); transform-origin: 50% 50%;
-    transition: opacity 0.9s ease-out, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1); }
+    transition: opacity 0.7s ease-out, transform 0.95s cubic-bezier(0.25, 1, 0.5, 1); }
   .built img.in { opacity: 1; transform: none; }
 
   .row { inset: 0; display: flex; align-items: center; justify-content: center; gap: 4%; }
@@ -268,14 +267,18 @@
   .row strong { font-size: 14px; color: var(--navy); }
   .cl { display: inline-flex; align-items: flex-start; gap: 5px; text-align: left; line-height: 1.3; }
   .cl i { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 4px; }
-  .city { color: #6b6f75; font-size: 11.5px; }
-  .narrow .row figcaption { font-size: 10.5px; }
+  /* phones: stack the examples and the three sizes vertically, label beside each avatar */
+  .narrow .row { flex-direction: column; gap: 10px; }
+  .narrow .row figure { flex-direction: row; max-width: 100%; width: 100%; justify-content: flex-start; gap: 12px; text-align: left; padding-left: 8%; }
+  .narrow .row figcaption { align-items: flex-start; margin-top: 0; font-size: 11.5px; }
+  .narrow .examples img { width: min(150px, calc(var(--sh) * 0.44)); flex: none; }
+  .narrow .scale img { width: min(120px, calc(var(--sh) * 0.29)); flex: none; }
 
   .counties { inset: 0; }
   .counties path { fill: #ECEEF1; stroke: #fff; stroke-width: 1; }
   .all { position: absolute; inset: 0; pointer-events: none; }
   .all img { position: absolute; left: 0; top: 0; transform-origin: center;
-    transition: transform 1.3s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s; }
+    transition: transform 1.1s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s; }
 
   .caption { flex: none; padding: 10px 22px 4px; min-height: 92px; }
   .narrow .caption { padding: 8px 14px 2px; min-height: 104px; }
@@ -284,10 +287,13 @@
   .caption p :global(strong) { color: var(--navy); font-weight: 800; }
   .caption p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: #33404d; max-width: 640px; }
   .narrow .caption p { font-size: 13px; }
-  .legend { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
-  .legend li { display: flex; align-items: center; gap: 7px; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.02em; opacity: 0.2; transition: opacity 0.5s; }
+  .legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+  .legend li { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 700; line-height: 1.25; color: var(--navy); text-transform: uppercase; letter-spacing: 0.02em; opacity: 0.2; transition: opacity 0.4s; }
+  .legend img { width: 34px; height: 34px; flex: none; }
   .legend li.in { opacity: 1; }
-  .narrow .legend li { font-size: 9.5px; gap: 5px; }
+  .narrow .legend { gap: 6px 10px; }
+  .narrow .legend li { font-size: 11px; gap: 7px; }
+  .narrow .legend img { width: 28px; height: 28px; }
 
   .controls { flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 10px 18px 14px; border-top: 1px solid var(--line); margin-top: 8px; }
   .narrow .controls { padding: 8px 10px 10px; }
