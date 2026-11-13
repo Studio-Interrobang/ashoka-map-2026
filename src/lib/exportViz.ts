@@ -15,6 +15,8 @@ export interface ExportOpts {
   title: string;
   subtitle: string;
   lines: string[]; // filter description
+  /** summary band: filtered total + per-cluster counts (as in the on-screen strip) */
+  summary?: { total: number; label: string; clusters: { c: string; n: number; name: string; tone: string }[] };
   footer: string[];
   filename: string;
 }
@@ -126,6 +128,35 @@ export async function buildSvg(o: ExportOpts) {
     for (const l of wrap(line, W - pad * 2, 12.5)) { y += 17; head += `<text x="${pad}" y="${y}" font-size="12.5" fill="#33404d">${esc(l)}</text>`; }
   }
   y += 14;
+
+  // summary band
+  if (o.summary) {
+    const icons = await Promise.all(o.summary.clusters.map((c) => dataUrl(`./avatars/icon-${c.c}.webp`)));
+    const bw = W - pad * 2;
+    const totalW = 172;
+    const cols = bw > 900 ? 4 : 2;
+    const cellW = (bw - totalW - 16) / cols;
+    const rows = Math.ceil(o.summary.clusters.length / cols);
+    const rowH = 36;
+    const bh = rows * rowH + 16;
+    head += `<rect x="${pad}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="#F3F4F6"/>`;
+    head += `<text x="${pad + 14}" y="${y + bh / 2 + 4}" font-size="32" font-weight="800" fill="#0074b0">${o.summary.total}</text>`;
+    head += `<text x="${pad + 14}" y="${y + bh / 2 + 22}" font-size="12" font-weight="700" fill="#1a1f24">${esc(o.summary.label)}</text>`;
+    head += `<line x1="${pad + totalW}" x2="${pad + totalW}" y1="${y + 10}" y2="${y + bh - 10}" stroke="#DDE0E4"/>`;
+    o.summary.clusters.forEach((c, i) => {
+      const cx = pad + totalW + 12 + (i % cols) * cellW;
+      const cy = y + 8 + Math.floor(i / cols) * rowH;
+      const mid = cy + rowH / 2;
+      if (icons[i]) head += `<image href="${icons[i]}" x="${cx}" y="${mid - 11}" width="22" height="22"/>`;
+      head += `<text x="${cx + 28}" y="${mid + 6}" font-size="18" font-weight="800" fill="${c.tone}">${c.n}</text>`;
+      const nameLines = wrap(c.name.toUpperCase(), cellW - 72, 11.6); // uppercase runs wider than the average glyph
+      nameLines.slice(0, 2).forEach((l, j) => {
+        const ly = mid + 3.5 + (j - (Math.min(nameLines.length, 2) - 1) / 2) * 11.5;
+        head += `<text x="${cx + 58}" y="${ly}" font-size="9.5" letter-spacing="0.2" fill="#1a1f24">${esc(l)}</text>`;
+      });
+    });
+    y += bh + 14;
+  }
   const chartY = y;
 
   // chart

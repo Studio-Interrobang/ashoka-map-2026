@@ -31,10 +31,7 @@
   aria-labelledby="org-title"
   transition:fly={narrow ? { y: 600, duration: reduce ? 0 : 260, easing: cubicOut, opacity: 1 } : { x: 420, duration: reduce ? 0 : 240, easing: cubicOut, opacity: 1 }}
 >
-  <div class="bar">
-    <span class="kicker">{t.cluster[org.clusters[0]]}{org.clusters.length > 1 ? ` +${org.clusters.length - 1}` : ''}</span>
-    <button class="close" bind:this={closeBtn} onclick={close} aria-label={t.detail.close}>✕</button>
-  </div>
+  <button class="close" bind:this={closeBtn} onclick={close} aria-label={t.detail.close}>✕</button>
 
   {#key org.id}
     <div class="body" in:fade={{ duration: reduce ? 0 : 120 }}>
@@ -94,16 +91,14 @@
   }
   :global(.wide) .drawer { width: min(420px, 45%); }
   .drawer.sheet { width: 100%; left: 0; border-left: none; box-shadow: none; }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; flex: none; padding: 0 8px 0 20px; border-bottom: 1px solid var(--line); }
-  .kicker { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b6f75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .close { width: 32px; height: 32px; flex: none; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--navy); font-size: 14px; }
+  .close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; flex: none; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--navy); font-size: 14px; }
   .sheet .close { width: 44px; height: 44px; }
   .close:hover { background: #F3F4F6; }
-  .body { flex: 1; overflow: auto; padding: 4px 20px 12px; }
+  .body { flex: 1; overflow: auto; padding: 14px 20px 12px; }
   /* sections separated by thin rules */
   section { padding: 18px 0; }
   section + section { border-top: 1px solid var(--line); }
-  .head { display: flex; gap: 14px; align-items: center; }
+  .head { display: flex; gap: 14px; align-items: center; padding-right: 34px; }
   .head img { flex: none; }
   h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; }
   .official { margin: 4px 0 0; font-size: 12px; color: #6b6f75; }

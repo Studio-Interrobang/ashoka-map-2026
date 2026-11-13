@@ -10,7 +10,9 @@
   import { ui, syncUrl, matches, lensActive } from './lib/state.svelte';
   import { exportViz } from './lib/exportViz';
   import { t as dict } from './lib/i18n';
-  import type { Org, GroupBy } from './lib/types';
+  import { CLUSTERS, type Org, type GroupBy } from './lib/types';
+  // AA-contrast text tones of the cluster colours (same as the summary strip)
+  const TONE = { C1: '#003F72', C2: '#00639a', C3: '#006b59', C4: '#9a5600' } as const;
 
   const REPORT_URL = 'https://docs.google.com/presentation/d/1xTLer-0hva-A5f5X3Xhb9d3vOc2tuJi3PDh6Ve6CoCw/edit';
   let orgs = $state<Org[]>([]);
@@ -65,10 +67,8 @@
     if (l.reach.length) parts.push(`${t.lens.reach}: ${l.reach.map((r) => t.reach[r]).join(', ')}`);
     if (l.activities.length) parts.push(`${t.lens.activities}: ${l.activities.map((a) => t.activity[a as keyof typeof t.activity]).join(', ')}`);
     if (l.county) parts.push(`${t.lens.county}: ${l.county}`);
-    const n = orgs.filter((o) => matches(o, l)).length;
     return [
       `${t.filtersLabel}: ${lensActive(l) ? parts.join(' · ') : t.noFilters}`,
-      t.showing.replace('{n}', String(n)).replace('{total}', String(orgs.length)),
     ];
   }
   async function download(fmt: 'png' | 'svg') {
@@ -80,6 +80,11 @@
       await exportViz(fmt, {
         svg, overlay: ui.view === 'clusters' ? overlay : null,
         title: t.title, subtitle: t.subtitle, lines: describe(),
+        summary: {
+          total: shownN,
+          label: `${shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}${t.organisations}`,
+          clusters: CLUSTERS.map((c) => ({ c, n: orgs.filter((o) => matches(o, ui.lens) && o.clusters.includes(c)).length, name: t.cluster[c], tone: TONE[c] })),
+        },
         footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
         filename: `ashoka-${ui.view === 'map' ? 'map' : 'clusters'}-2026-${ui.lang}`,
       });
