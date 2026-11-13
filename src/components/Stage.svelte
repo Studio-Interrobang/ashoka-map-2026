@@ -87,6 +87,8 @@
   let hoveredPos = $derived(hoveredOrg ? pos(hoveredOrg) : undefined);
 
   function fill(name: string) {
+    // zoomable map: counties with organisations a touch darker than empty ones
+    if (ui.variant === 'zoom') return (layout?.countyCounts.get(norm(name)) ?? 0) > 0 ? '#E4E7EB' : '#F4F5F7';
     if (ui.variant !== 'choropleth') return '#ECEEF1';
     const n = layout?.countyCounts.get(norm(name)) ?? 0;
     if (!n) return '#F6F7F8';
@@ -101,8 +103,8 @@
   }
 </script>
 
-<div class="stage" class:zoomable={ui.variant === 'zoom'}>
-  <svg bind:this={svgEl} width={w} height={h} role="img" aria-label="Map of organisations">
+<div class="stage" class:zoomable={ui.variant === 'zoom'} class:scroll={ui.variant === 'universe'}>
+  <svg bind:this={svgEl} width={w} height={layout?.contentH ?? h} role="img" aria-label="Map of organisations">
     {#if layout}
       <!-- background -->
       {#if path && ui.variant !== 'universe'}
@@ -173,13 +175,17 @@
             <text x={g.x} y={g.y + g.r + 11 > h - 3 ? g.y - g.r - 5 : g.y + g.r + 11} text-anchor="middle" class="glabel">{g.label}{g.n > 1 ? ` · ${g.n}` : ''}</text>
           {:else if ui.variant === 'choropleth' && g.n >= 3}
             <text x={g.x} y={g.y + g.r + 11} text-anchor="middle" class="glabel">{g.label} · {g.n}</text>
-          {:else if ui.variant === 'universe'}
-            <text x={g.x} y={g.y - g.r - 6} text-anchor="middle" class="glabel">{g.label} · {g.n}</text>
           {/if}
         {/each}
       </g>
     {/if}
   </svg>
+
+  {#if layout && ui.variant === 'universe'}
+    {#each layout.groups as g (g.key)}
+      <div class="ulabel" style="left:{g.x}px; top:{g.y - g.r - 6}px; width:{g.lw ?? 130}px">{g.label} <b>{g.n}</b></div>
+    {/each}
+  {/if}
 
   {#if hoveredOrg && hoveredPos}
     <div class="tip" style="left:{hoveredPos.x}px; top:{hoveredPos.y - hoveredPos.r - 8}px">
@@ -198,6 +204,7 @@
 
 <style>
   .stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  .stage.scroll { overflow-y: auto; overflow-x: hidden; }
   .stage.zoomable svg { cursor: grab; }
   svg { display: block; touch-action: none; }
   .counties path { stroke: #fff; stroke-width: 1; transition: fill 0.4s; }
@@ -212,10 +219,12 @@
   .bloom-bg { fill: #F5F6F8; stroke: #E1E4E8; }
   .county-disc { fill: #F1F2F4; stroke: #D5D9DE; }
   .county-disc.empty { fill: #E1E4E8; stroke: none; }
-  .uni-group { fill: rgba(0, 63, 114, 0.04); stroke: rgba(0, 63, 114, 0.15); }
+  .uni-group { fill: #F3F4F6; stroke: #E1E4E8; }
   .glabel { font-size: 11px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
   .glabel.big { font-size: 14px; font-weight: 700; fill: var(--navy); }
   .gcount { font-size: 26px; font-weight: 800; fill: var(--cyan-text); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+  .ulabel { position: absolute; transform: translate(-50%, -100%); text-align: center; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.25; font-weight: 600; color: var(--ink); pointer-events: none; }
+  .ulabel b { color: var(--navy); }
   .tip {
     position: absolute; transform: translate(-50%, -100%); pointer-events: none;
     background: var(--navy); color: #fff; padding: 5px 9px; border-radius: var(--radius-sm); font-size: 12px;

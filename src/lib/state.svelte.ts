@@ -1,5 +1,7 @@
 import type { Cluster, GroupBy, Lang, Lens, Org, Reach, Variant } from './types';
 
+export type View = 'map' | 'clusters' | 'table';
+
 const VARIANTS: Variant[] = ['zoom', 'bloom', 'choropleth', 'dorling', 'universe'];
 
 function readParams() {
@@ -10,8 +12,8 @@ function readParams() {
   const v = get('map') as Variant;
   return {
     lang: lang as Lang,
-    view: (get('view') === 'table' ? 'table' : 'map') as 'map' | 'table',
-    variant: VARIANTS.includes(v) ? v : ('bloom' as Variant),
+    view: (['table', 'clusters'].includes(get('view') ?? '') ? get('view') : 'map') as View,
+    variant: VARIANTS.includes(v) ? v : ('zoom' as Variant),
     selected: get('org'),
     lab: p.get('lab') === '1',
   };
@@ -23,7 +25,7 @@ export const ui = $state({
   lang: init.lang,
   view: init.view,
   variant: init.variant,
-  groupBy: 'reach' as GroupBy,
+  groupBy: 'cluster' as GroupBy,
   selected: init.selected as string | null,
   hovered: null as string | null,
   lab: init.lab,
@@ -60,7 +62,6 @@ export function syncUrl() {
   const h = new URLSearchParams();
   h.set('lang', ui.lang);
   if (ui.view !== 'map') h.set('view', ui.view);
-  if (ui.lab) h.set('map', ui.variant);
   if (ui.selected) h.set('org', ui.selected);
   history.replaceState(null, '', '#' + h.toString());
 }

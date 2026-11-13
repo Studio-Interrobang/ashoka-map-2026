@@ -1,5 +1,5 @@
 import { geoMercator, geoPath, type GeoProjection } from 'd3-geo';
-import { packSiblings, packEnclose, pack, hierarchy } from 'd3-hierarchy';
+import { packSiblings, packEnclose } from 'd3-hierarchy';
 import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
 import type { Counties } from './data';
 import { norm } from './data';
@@ -13,12 +13,14 @@ export interface Group {
   ax: number; ay: number; // geographic anchor
   empty?: boolean;
   px?: number; py?: number; // true location (leader line)
+  lw?: number; // label width (clusters view)
 }
 export interface Layout {
   nodes: Map<string, NodePos>;
   groups: Group[];
   projection: GeoProjection | null;
   countyCounts: Map<string, number>;
+  contentH?: number; // clusters view may be taller than the stage (scrolls)
 }
 
 export function nodeRadius(w: number, h: number) {
@@ -163,19 +165,58 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
   if (groupBy === 'reach') keys = REACHES.filter((k) => buckets.has(k));
   else keys.sort((a, b) => buckets.get(b)!.length - buckets.get(a)!.length);
 
-  type Datum = { key: string; children?: Datum[]; org?: Org };
-  const root = hierarchy<Datum>({ key: 'root', children: keys.map((k) => ({ key: k, children: buckets.get(k)!.sort(byAvatar).map((o) => ({ key: o.id, org: o })) })) })
-    .count();
-  const S = Math.min(w, h) - 16;
-  const packed = pack<Datum>().size([S, S]).padding((d) => (d.depth === 0 ? Math.max(8, S * 0.03) : 1.2))(root);
-  const ox = (w - S) / 2; const oy = (h - S) / 2;
+  // Flow layout: one packed bubble per group, laid out in centred rows like words in a paragraph,
+  // with room above each bubble for its (possibly long, official) label. Scale is chosen to fit the stage.
   const nodes = new Map<string, NodePos>();
   const groups: Group[] = [];
-  for (const d of packed.descendants()) {
-    if (d.depth === 2 && d.data.org) nodes.set(d.data.org.id, { x: d.x + ox, y: d.y + oy, r: d.r * 0.96 });
-    if (d.depth === 1 && groupBy !== 'none') groups.push({ key: d.data.key, label: groupLabel(d.data.key), n: d.children?.length ?? 0, x: d.x + ox, y: d.y + oy, r: d.r, ax: 0, ay: 0 });
+  if (groupBy === 'none') {
+    const r0 = nodeRadius(w, h);
+    for (let s = 2.2; s >= 0.4; s -= 0.05) {
+      const p = packEqual(buckets.get('all')!, r0 * s, 1);
+      if (p.R * 2 <= Math.min(w, h) - 16) {
+        for (const c of p.circles) nodes.set(c.id, { x: w / 2 + c.dx, y: h / 2 + c.dy, r: r0 * s });
+        break;
+      }
+    }
+    return { nodes, groups, projection: null, countyCounts: counts };
   }
-  return { nodes, groups, projection: null, countyCounts: counts };
+  let contentH = h;
+  const labelH = groupBy === 'cluster' ? 66 : 22;
+  const minCell = groupBy === 'cluster' ? 150 : 90;
+  const gapX = 14; const gapY = 10;
+  const base = nodeRadius(w, h);
+  for (let step = 0; step <= 26; step++) {
+    const s = 1.6 - step * 0.05; // 1.6 → 0.3
+    // on phones keep bubbles legible and let the view scroll instead of shrinking further
+    const last = step === 26 || (w < 560 && s <= 0.85);
+    const r = base * s;
+    const items = keys.map((k) => { const p = packEqual(buckets.get(k)!, r, 0.9); return { k, p, cw: Math.max(p.R * 2, minCell) }; });
+    const rows: { items: typeof items; width: number; height: number }[] = [];
+    let cur: typeof items = []; let cw = 0;
+    for (const it of items) {
+      if (cur.length && cw + gapX + it.cw > w - 8) { rows.push({ items: cur, width: cw, height: 0 }); cur = []; cw = 0; }
+      cw += (cur.length ? gapX : 0) + it.cw; cur.push(it);
+    }
+    if (cur.length) rows.push({ items: cur, width: cw, height: 0 });
+    for (const row of rows) row.height = labelH + Math.max(...row.items.map((i) => i.p.R * 2));
+    const H = rows.reduce((a, r2) => a + r2.height, 0) + gapY * (rows.length - 1);
+    if (H > h - 8 && !last) continue;
+    contentH = Math.max(h, H + 8);
+    let y = Math.max(4, (h - H) / 2);
+    for (const row of rows) {
+      let x = (w - row.width) / 2;
+      const maxD = Math.max(...row.items.map((i) => i.p.R * 2));
+      for (const it of row.items) {
+        const cx = x + it.cw / 2; const cy = y + labelH + maxD / 2;
+        groups.push({ key: it.k, label: groupLabel(it.k), n: buckets.get(it.k)!.length, x: cx, y: cy, r: it.p.R, ax: 0, ay: 0, lw: it.cw - 6 });
+        for (const c of it.p.circles) nodes.set(c.id, { x: cx + c.dx, y: cy + c.dy, r });
+        x += it.cw + gapX;
+      }
+      y += row.height + gapY;
+    }
+    break;
+  }
+  return { nodes, groups, projection: null, countyCounts: counts, contentH };
 }
 
 /** Collision-resolved positions for the zoomable map at zoom level k (in map coordinates). */
