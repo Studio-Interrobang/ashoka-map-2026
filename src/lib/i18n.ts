@@ -87,6 +87,11 @@ const en = {
   },
   zoomHint: 'Scroll or pinch to zoom',
   zoomIn: 'Zoom in',
+  download: 'Download',
+  filtersLabel: 'Filters',
+  noFilters: 'No filters applied',
+  showing: 'Showing {n} of {total} organisations',
+  language: 'Language',
   zoomOut: 'Zoom out',
   reset: 'Reset view',
 };
@@ -177,6 +182,11 @@ const ro: typeof en = {
   },
   zoomHint: 'Folosește scroll sau pinch pentru zoom',
   zoomIn: 'Mărește',
+  download: 'Descarcă',
+  filtersLabel: 'Filtre',
+  noFilters: 'Fără filtre',
+  showing: '{n} din {total} organizații',
+  language: 'Limbă',
   zoomOut: 'Micșorează',
   reset: 'Resetează harta',
 };

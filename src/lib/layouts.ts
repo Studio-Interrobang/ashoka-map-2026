@@ -175,7 +175,7 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
   const nodes = new Map<string, NodePos>();
   const groups: Group[] = [];
   let contentH = h;
-  const labelH = groupBy === 'cluster' ? 52 : 20;
+  const labelH = groupBy === 'cluster' ? 52 : groupBy === 'activity' ? 36 : 20;
   const minCell = groupBy === 'cluster' ? 140 : 96;
   const gapX = 14; const gapY = 10;
   const base = nodeRadius(w, h);

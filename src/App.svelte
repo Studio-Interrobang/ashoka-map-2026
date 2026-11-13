@@ -7,7 +7,8 @@
   import Summary from './components/Summary.svelte';
   import Search from './components/Search.svelte';
   import { loadAll, type Counties } from './lib/data';
-  import { ui, syncUrl } from './lib/state.svelte';
+  import { ui, syncUrl, matches, lensActive } from './lib/state.svelte';
+  import { exportViz } from './lib/exportViz';
   import { t as dict } from './lib/i18n';
   import type { Org, GroupBy } from './lib/types';
 
@@ -51,6 +52,40 @@
   });
 
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
+
+  // ---- download (Map / Clusters) ----
+  let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null } } | undefined>();
+  let dlOpen = $state(false);
+  let busy = $state(false);
+  function describe() {
+    const l = ui.lens;
+    const parts: string[] = [];
+    if (l.clusters.length) parts.push(`${t.lens.clusters}: ${l.clusters.map((c) => t.cluster[c]).join(', ')}`);
+    if (l.reach.length) parts.push(`${t.lens.reach}: ${l.reach.map((r) => t.reach[r]).join(', ')}`);
+    if (l.activities.length) parts.push(`${t.lens.activities}: ${l.activities.map((a) => t.activity[a as keyof typeof t.activity]).join(', ')}`);
+    if (l.county) parts.push(`${t.lens.county}: ${l.county}`);
+    const n = orgs.filter((o) => matches(o, l)).length;
+    const view = ui.view === 'clusters' ? `${t.clusters} · ${t.groupBy.label}: ${t.groupBy[ui.groupBy]}` : t.map;
+    return [
+      view,
+      `${t.filtersLabel}: ${lensActive(l) ? parts.join(' · ') : t.noFilters}`,
+      t.showing.replace('{n}', String(n)).replace('{total}', String(orgs.length)),
+    ];
+  }
+  async function download(fmt: 'png' | 'svg') {
+    dlOpen = false;
+    if (!stageRef) return;
+    busy = true;
+    try {
+      const { svg, overlay } = stageRef.chartEls();
+      await exportViz(fmt, {
+        svg, overlay: ui.view === 'clusters' ? overlay : null,
+        title: t.title, subtitle: t.subtitle, lines: describe(),
+        footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
+        filename: `ashoka-${ui.view === 'map' ? 'map' : 'clusters'}-2026-${ui.lang}`,
+      });
+    } finally { busy = false; }
+  }
   // the Clusters view doesn't offer a filter for the dimension it is grouped by
   const groupLens = { cluster: 'clusters', reach: 'reach', activity: 'activities' } as const;
   let hide = $derived(ui.view === 'clusters' ? [groupLens[ui.groupBy]] : []);
@@ -60,6 +95,8 @@
     untrack(() => { ui.lens[k].length = 0; });
   });
 </script>
+
+<svelte:window onclick={(e) => { if (!(e.target as HTMLElement).closest('.dl')) dlOpen = false; }} />
 
 <div class="app" class:narrow class:wide bind:clientWidth={appW}>
   <div class="content" inert={!!selectedOrg}>
@@ -80,10 +117,11 @@
         <button role="tab" aria-selected={ui.view === 'clusters'} onclick={() => (ui.view = 'clusters')}>{t.clusters}</button>
         <button role="tab" aria-selected={ui.view === 'table'} onclick={() => (ui.view = 'table')}>{t.table}</button>
       </div>
-      <div class="seg lang" role="group" aria-label="Language">
-        <button aria-pressed={ui.lang === 'ro'} onclick={() => (ui.lang = 'ro')}>RO</button>
-        <button aria-pressed={ui.lang === 'en'} onclick={() => (ui.lang = 'en')}>EN</button>
-      </div>
+      <label class="lang" title={t.language}>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c2 2.2 2 10.8 0 13M8 1.5c-2 2.2-2 10.8 0 13"/></svg>
+        <select bind:value={ui.lang} aria-label={t.language}><option value="ro">RO</option><option value="en">EN</option></select>
+        <span class="caret" aria-hidden="true">▾</span>
+      </label>
     </div>
 
     {#if orgs.length}<Summary {orgs} {t} />{:else}<div class="strip-ph"></div>{/if}
@@ -103,18 +141,34 @@
       {:else if !counties}
         <div class="msg"><span class="spinner"></span></div>
       {:else if ui.view !== 'table'}
-        <Stage {orgs} {counties} w={sw} h={sh} {t} />
+        <Stage bind:this={stageRef} {orgs} {counties} w={sw} h={sh} {t} />
       {:else}
         <Table {orgs} {t} />
       {/if}
       {#if ui.view === 'map' && orgs.length && !narrow && fact}<p class="fact caption">{fact}</p>{/if}
+      {#if ui.view !== 'table' && counties}
+        <div class="dl">
+          {#if dlOpen}
+            <div class="dl-menu" role="menu">
+              <button role="menuitem" onclick={() => download('png')}>PNG</button>
+              <button role="menuitem" onclick={() => download('svg')}>SVG</button>
+            </div>
+          {/if}
+          <button class="dl-btn" aria-expanded={dlOpen} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
+            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>
+            {t.download}
+          </button>
+        </div>
+      {/if}
     </div>
     {#if ui.view !== 'map' && !narrow && fact}<p class="fact row">{fact}</p>{/if}
 
     <footer>
-      <span class="src">{t.source}</span>
-      <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
-      {#if ui.view === 'map'}<span class="credit">{t.geoCredit}</span>{/if}
+      <div class="row">
+        <span class="src">{t.source}</span>
+        <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
+      </div>
+      {#if ui.view === 'map'}<div class="credit">{t.geoCredit}</div>{/if}
     </footer>
   </div>
 
@@ -129,7 +183,7 @@
   }
 
   /* masthead: logo + title, subtitle, intro */
-  .masthead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .masthead { display: flex; align-items: center; gap: 12px; min-width: 0; padding-bottom: 8px; }
   .logo { width: 56px; height: 56px; flex: none; }
   .titles { flex: 1; min-width: 0; }
   h1 { font-size: 22px; font-weight: 800; color: var(--navy); margin: 0; line-height: 1.15; }
@@ -143,7 +197,7 @@
   .toolbar .search-slot { flex: 1; min-width: 0; max-width: 260px; margin-right: auto; }
   .seg { display: inline-flex; flex: none; border: 1px solid var(--line); border-radius: var(--radius); padding: 2px; background: #fff; }
   .seg button { font: inherit; font-size: 12.5px; font-weight: 600; border: none; background: none; color: var(--navy); height: 28px; padding: 0 11px; border-radius: var(--radius-sm); cursor: pointer; }
-  .seg button[aria-selected='true'], .seg button[aria-pressed='true'] { background: var(--navy); color: #fff; }
+  .seg button[aria-selected='true'] { background: var(--navy); color: #fff; }
 
   .filters { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
   .groupby { margin-left: auto; font-size: 12px; color: #4a5560; display: flex; align-items: center; gap: 6px; }
@@ -159,10 +213,25 @@
   .fact.caption { position: absolute; left: 10px; top: 10px; max-width: min(46%, 380px); background: rgba(255, 255, 255, 0.88); pointer-events: none; }
   .fact.row:empty { display: none; }
 
-  footer { display: flex; gap: 14px; font-size: 10.5px; color: #6b6f75; white-space: nowrap; min-width: 0; }
+  footer { font-size: 10.5px; color: #6b6f75; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  footer .row { display: flex; gap: 14px; white-space: nowrap; min-width: 0; }
   footer .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   footer a { color: var(--navy); font-weight: 700; flex: none; }
-  .credit { margin-left: auto; flex: none; }
+
+  /* language: quiet globe dropdown so the view tabs lead */
+  .lang { position: relative; display: inline-flex; align-items: center; gap: 4px; flex: none; color: #4a5560; font-size: 12px; padding: 0 4px; height: 30px; cursor: pointer; }
+  .lang select { appearance: none; -webkit-appearance: none; border: none; background: none; font: inherit; font-weight: 600; color: inherit; padding: 0 12px 0 0; margin-right: -10px; cursor: pointer; }
+  .lang .caret { font-size: 9px; opacity: 0.7; pointer-events: none; }
+  .lang:hover { color: var(--navy); }
+
+  /* download */
+  .dl { position: absolute; right: 10px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .dl-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font: inherit; font-size: 12px; font-weight: 600; color: var(--navy); background: #fff; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+  .dl-btn:hover { background: #F3F4F6; }
+  .dl-btn:disabled { opacity: 0.6; cursor: progress; }
+  .dl-menu { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); padding: 4px; }
+  .dl-menu button { font: inherit; font-size: 12.5px; text-align: left; border: none; background: none; padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; color: var(--ink); }
+  .dl-menu button:hover { background: #F1F2F4; }
 
   /* phones */
   .narrow .content { padding: 8px; gap: 6px; }
@@ -173,7 +242,6 @@
   .narrow .toolbar .search-slot { flex: 1 1 100%; max-width: none; order: 3; }
   .narrow .tabs { flex: 1; }
   .narrow .tabs button { flex: 1; }
-  .narrow footer { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
-  .narrow .credit { margin-left: 0; }
+  .narrow footer .row { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
   .wide .content { padding: 12px 14px 10px; }
 </style>

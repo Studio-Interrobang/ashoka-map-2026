@@ -37,6 +37,9 @@
   $effect(() => { if (layout && !ready) setTimeout(() => (ready = true), 400); });
   let spread = $state(new Map<string, { x: number; y: number }>());
   let svgEl: SVGSVGElement | undefined = $state();
+  let stageEl: HTMLDivElement | undefined = $state();
+  /** for export: the chart svg + the element holding its HTML labels */
+  export function chartEls() { return { svg: svgEl!, overlay: stageEl ?? null }; }
   let zb: ZoomBehavior<SVGSVGElement, unknown> | null = null;
   let rz = $derived(Math.min(nodeRadius(w, h) * Math.sqrt(zt.k) * 0.8, 20));
 
@@ -115,7 +118,7 @@
   }
 </script>
 
-<div class="stage" class:zoomable={ui.variant === 'zoom'} class:scroll={ui.variant === 'universe'}>
+<div class="stage" bind:this={stageEl} class:zoomable={ui.variant === 'zoom'} class:scroll={ui.variant === 'universe'}>
   <svg bind:this={svgEl} width={w} height={layout?.contentH ?? h} role="img" aria-label="Map of organisations">
     {#if layout}
       <!-- background -->
@@ -252,5 +255,5 @@
   .zoom-ctl button { width: 30px; height: 30px; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; font-size: 18px; line-height: 1; color: var(--navy); cursor: pointer; padding: 0; }
   .zoom-ctl button:hover { background: #F3F4F6; }
   .zoom-ctl .reset { font-size: 16px; }
-  .hint { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
+  .hint { position: absolute; left: 12px; bottom: 8px; font-size: 11px; color: #6b6b6b; }
 </style>
