@@ -57,7 +57,7 @@
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
 
   // ---- download (Map / Clusters) ----
-  let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null } } | undefined>();
+  let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null }; withFullView: <T>(fn: () => Promise<T>) => Promise<T> } | undefined>();
   let dlOpen = $state(false);
   let busy = $state(false);
   function describe() {
@@ -73,21 +73,26 @@
   }
   async function download(fmt: 'png' | 'svg') {
     dlOpen = false;
-    if (!stageRef) return;
+    const ref = stageRef;
+    if (!ref) return;
     busy = true;
     try {
-      const { svg, overlay } = stageRef.chartEls();
-      await exportViz(fmt, {
-        svg, overlay: ui.view === 'clusters' ? overlay : null,
-        title: t.title, subtitle: t.subtitle, lines: describe(),
-        summary: {
-          total: shownN,
-          label: `${shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}${t.organisations}`,
-          clusters: CLUSTERS.map((c) => ({ c, n: orgs.filter((o) => matches(o, ui.lens) && o.clusters.includes(c)).length, name: t.cluster[c], tone: TONE[c] })),
-        },
-        footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
-        filename: `ashoka-${ui.view === 'map' ? 'map' : 'clusters'}-2026-${ui.lang}`,
-      });
+      const run = async () => {
+        const { svg, overlay } = ref.chartEls();
+        await exportViz(fmt, {
+          svg, overlay: ui.view === 'clusters' ? overlay : null,
+          title: t.title, subtitle: t.subtitle, lines: describe(),
+          summary: {
+            total: shownN,
+            label: `${shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}${t.organisations}`,
+            clusters: CLUSTERS.map((c) => ({ c, n: orgs.filter((o) => matches(o, ui.lens) && o.clusters.includes(c)).length, name: t.cluster[c], tone: TONE[c] })),
+          },
+          footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
+          social: narrow ? 1.25 : undefined,
+          filename: `ashoka-${ui.view === 'map' ? 'map' : 'clusters'}-2026-${ui.lang}`,
+        });
+      };
+      await (narrow && ui.view === 'map' ? ref.withFullView(run) : run());
     } finally { busy = false; }
   }
   // the Clusters view doesn't offer a filter for the dimension it is grouped by

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { untrack } from 'svelte';
+  import { untrack, tick } from 'svelte';
   import { geoPath } from 'd3-geo';
   import { zoom as d3zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom';
   import { select } from 'd3-selection';
@@ -40,6 +40,15 @@
   let stageEl: HTMLDivElement | undefined = $state();
   /** for export: the chart svg + the element holding its HTML labels */
   export function chartEls() { return { svg: svgEl!, overlay: stageEl ?? null }; }
+  /** Run fn with the whole map in view (no zoom), then put the user's zoom back. Used by the social export. */
+  export async function withFullView<T>(fn: () => Promise<T>): Promise<T> {
+    if (!svgEl || !zb) return fn();
+    const sel = select(svgEl);
+    const prev = zoomIdentity.translate(zt.x, zt.y).scale(zt.k);
+    sel.interrupt().call(zb.transform, zoomIdentity);
+    await tick();
+    try { return await fn(); } finally { sel.call(zb.transform, prev); }
+  }
   let zb: ZoomBehavior<SVGSVGElement, unknown> | null = null;
   let rz = $derived(Math.min(nodeRadius(w, h) * Math.sqrt(zt.k) * 0.8, 20));
 
