@@ -22,6 +22,7 @@
   let t = $derived(dict(ui.lang));
   let selectedOrg = $derived(orgs.find((o) => o.id === ui.selected) ?? null);
   let narrow = $derived(appW < 600);
+  let shownN = $derived(orgs.filter((o) => matches(o, ui.lens)).length);
   let wide = $derived(appW >= 1000);
 
   let fact = $derived(
@@ -122,9 +123,14 @@
       </label>
     </div>
 
-    {#if orgs.length}<Summary {orgs} {t} />{:else}<div class="strip-ph"></div>{/if}
+    {#if !narrow}
+      {#if orgs.length}<Summary {orgs} {t} />{:else}<div class="strip-ph"></div>{/if}
+    {/if}
 
     <div class="filters">
+      {#if narrow && orgs.length}
+        <div class="kpi"><span class="num">{shownN}</span><span class="lbl">{shownN === orgs.length ? '' : `${t.of} ${orgs.length} `}{t.organisations}</span></div>
+      {/if}
       <Lenses {orgs} {t} {narrow} {hide} />
       {#if ui.view === 'clusters'}
         <label class="groupby">{#if !narrow}{t.groupBy.label}{/if}
@@ -144,20 +150,6 @@
         <Table {orgs} {t} />
       {/if}
       {#if ui.view === 'map' && orgs.length && !narrow && fact}<p class="fact caption">{fact}</p>{/if}
-      {#if ui.view !== 'table' && counties}
-        <div class="dl">
-          {#if dlOpen}
-            <div class="dl-menu" role="menu">
-              <button role="menuitem" onclick={() => download('png')}>PNG</button>
-              <button role="menuitem" onclick={() => download('svg')}>SVG</button>
-            </div>
-          {/if}
-          <button class="dl-btn" aria-expanded={dlOpen} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
-            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>
-            {t.download}
-          </button>
-        </div>
-      {/if}
     </div>
     {#if ui.view !== 'map' && !narrow && fact}<p class="fact row">{fact}</p>{/if}
 
@@ -165,6 +157,20 @@
       <div class="row">
         <span class="src">{t.source}</span>
         <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
+        {#if ui.view !== 'table' && counties}
+          <div class="dl">
+            {#if dlOpen}
+              <div class="dl-menu" role="menu">
+                <button role="menuitem" onclick={() => download('png')}>PNG</button>
+                <button role="menuitem" onclick={() => download('svg')}>SVG</button>
+              </div>
+            {/if}
+            <button class="dl-btn" aria-expanded={dlOpen} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
+              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>
+              {t.download}
+            </button>
+          </div>
+        {/if}
       </div>
       {#if ui.view === 'map'}<div class="credit">{t.geoCredit}</div>{/if}
     </footer>
@@ -177,7 +183,10 @@
   .app { position: relative; height: 100%; container-type: inline-size; background: #fff; color: var(--ink); overflow: hidden; }
   .content {
     height: 100%; box-sizing: border-box; padding: 10px 12px 8px;
-    display: grid; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto; gap: 8px; min-width: 0;
+    display: flex; flex-direction: column; gap: 8px; min-width: 0;
+  }
+  .content > * { flex: none; }
+  .content > .stage-wrap { flex: 1 1 0; min-height: 0;
   }
 
   /* masthead: logo + title, subtitle, intro */
@@ -212,7 +221,7 @@
   .fact.row:empty { display: none; }
 
   footer { font-size: 10.5px; color: #6b6f75; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  footer .row { display: flex; gap: 14px; white-space: nowrap; min-width: 0; }
+  footer .row { display: flex; align-items: center; gap: 14px; white-space: nowrap; min-width: 0; }
   footer .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   footer a { color: var(--navy); font-weight: 700; flex: none; }
 
@@ -223,11 +232,11 @@
   .lang:hover { color: var(--navy); }
 
   /* download */
-  .dl { position: absolute; right: 10px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .dl-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font: inherit; font-size: 12px; font-weight: 600; color: var(--navy); background: #fff; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+  .dl { position: relative; margin-left: auto; flex: none; }
+  .dl-btn { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; font: inherit; font-size: 12px; font-weight: 600; color: var(--navy); background: #fff; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
   .dl-btn:hover { background: #F3F4F6; }
   .dl-btn:disabled { opacity: 0.6; cursor: progress; }
-  .dl-menu { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); padding: 4px; }
+  .dl-menu { position: absolute; right: 0; bottom: calc(100% + 4px); z-index: 30; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); padding: 4px; }
   .dl-menu button { font: inherit; font-size: 12.5px; text-align: left; border: none; background: none; padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; color: var(--ink); }
   .dl-menu button:hover { background: #F1F2F4; }
 
@@ -241,5 +250,11 @@
   .narrow .tabs { flex: 1; }
   .narrow .tabs button { flex: 1; }
   .narrow footer .row { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
+  .narrow footer .src { flex: 1 1 100%; }
+
+  /* phones: just the total, left, next to the Filters button */
+  .kpi { display: flex; align-items: baseline; gap: 6px; margin-right: auto; }
+  .kpi .num { font-size: 30px; font-weight: 800; color: var(--cyan-text); line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi .lbl { font-size: 13px; font-weight: 700; color: var(--ink); }
   .wide .content { padding: 12px 14px 10px; }
 </style>

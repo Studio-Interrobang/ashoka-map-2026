@@ -69,7 +69,7 @@ const en = {
   other: 'Other',
   notSpecified: 'Not specified',
   bucharest: 'București',
-  source: 'Source: Ashoka Romania Changemaker Organizations Survey, March–April 2026 · snowball methodology',
+  source: 'Source: Ashoka Romania Changemaker Organizations Survey, March–April 2026',
   report: 'Read the report',
   geoCredit: 'Boundaries © geo-spatial.org (CC BY-SA)',
   facts: {
@@ -164,7 +164,7 @@ const ro: typeof en = {
   other: 'Altele',
   notSpecified: 'Nespecificat',
   bucharest: 'București',
-  source: 'Sursa: Sondajul Ashoka România privind organizațiile changemaker, martie–aprilie 2026 · metoda bulgărelui de zăpadă',
+  source: 'Sursa: Sondajul Ashoka România privind organizațiile changemaker, martie–aprilie 2026',
   report: 'Citește raportul',
   geoCredit: 'Limite © geo-spatial.org (CC BY-SA)',
   facts: {

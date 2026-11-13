@@ -4,7 +4,7 @@
   function size(f) {
     var w = f.getBoundingClientRect().width || f.parentNode.clientWidth;
     var vh = window.innerHeight || 800;
-    var h = w >= 600 ? 840 : Math.min(Math.max(vh * 0.9, 640), 840);
+    var h = w >= 600 ? 840 : Math.min(Math.max(vh * 0.94, 560), 780); // phones: one screen tall
     var min = parseInt(f.getAttribute('data-min-height') || '0', 10);
     f.style.height = Math.max(h, min) + 'px';
   }

@@ -64,8 +64,9 @@
           .on('zoom', (e) => (zt = { k: e.transform.k, x: e.transform.x, y: e.transform.y }))
           .on('end', () => { zooming = false; respread(); });
         sel.call(zb).on('dblclick.zoom', null);
-        sel.property('__zoom', zoomIdentity);
-        zt = { k: 1, x: 0, y: 0 };
+        const it = homeTransform(W, H);
+        sel.property('__zoom', it);
+        zt = { k: it.k, x: it.x, y: it.y };
         respread();
       } else {
         sel.on('.zoom', null);
@@ -77,8 +78,19 @@
   });
 
   function zoomBy(f: number) { if (svgEl && zb) select(svgEl).transition().duration(350).call(zb.scaleBy, f); }
-  function resetZoom() { if (svgEl && zb) select(svgEl).transition().duration(450).call(zb.transform, zoomIdentity); }
-  let zoomed = $derived(zt.k > 1.01 || Math.abs(zt.x) > 1 || Math.abs(zt.y) > 1);
+  /** Start view. Phones: Romania is wider than the stage is tall, so start zoomed in to fill the height (pan to see the edges). */
+  function homeTransform(W: number, H: number) {
+    if (W >= 600 || !path) return zoomIdentity;
+    const [[x0, y0], [x1, y1]] = path.bounds(counties as never);
+    const k = Math.min(1.45, Math.max(1, (H * 0.94) / (y1 - y0)));
+    const cx = (x0 + x1) / 2; const cy = (y0 + y1) / 2;
+    const tx = Math.min(0, Math.max(W - W * k, W / 2 - cx * k));
+    const ty = Math.min(0, Math.max(H - H * k, H / 2 - cy * k));
+    return zoomIdentity.translate(tx, ty).scale(k);
+  }
+  let home = $derived(homeTransform(w, h));
+  function resetZoom() { if (svgEl && zb) select(svgEl).transition().duration(450).call(zb.transform, home); }
+  let zoomed = $derived(Math.abs(zt.k - home.k) > 0.01 || Math.abs(zt.x - home.x) > 1 || Math.abs(zt.y - home.y) > 1);
 
   // node instances: one per org, except the Clusters view grouped by activity (an org can appear in several groups)
   let byId = $derived(new Map(orgs.map((o) => [o.id, o])));
