@@ -53,7 +53,7 @@
   input:focus { border-color: var(--navy); }
   ul { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40; list-style: none; margin: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 30, 60, 0.12); min-width: 240px; }
   li button { display: flex; gap: 8px; align-items: center; width: 100%; padding: 6px 8px; border: none; background: none; border-radius: var(--radius-sm); cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
-  li button.hl, li button:hover { background: #F3F1EA; }
+  li button.hl, li button:hover { background: #F1F2F4; }
   li span { display: flex; flex-direction: column; font-size: 13px; }
   li small { color: #777; font-size: 11px; }
   .none { padding: 8px; color: #777; font-size: 13px; }

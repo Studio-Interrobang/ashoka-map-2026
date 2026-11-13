@@ -16,7 +16,7 @@
   const groupLabel = (k: string) => {
     if (k === '~other') return t.other;
     if (ui.groupBy === 'reach') return t.reach[k as keyof typeof t.reach] ?? k;
-    if (ui.groupBy === 'cluster') return k.split(' + ').map((c) => t.clusterShort[c as keyof typeof t.clusterShort]).join(' + ');
+    if (ui.groupBy === 'cluster') return k.split(' + ').map((c) => t.cluster[c as keyof typeof t.clusterShort]).join(' + ');
     return k;
   };
 
@@ -87,9 +87,9 @@
   let hoveredPos = $derived(hoveredOrg ? pos(hoveredOrg) : undefined);
 
   function fill(name: string) {
-    if (ui.variant !== 'choropleth') return '#EEEBE2';
+    if (ui.variant !== 'choropleth') return '#ECEEF1';
     const n = layout?.countyCounts.get(norm(name)) ?? 0;
-    if (!n) return '#F4F2EC';
+    if (!n) return '#F6F7F8';
     const tt = Math.sqrt(n / maxCount);
     // light blue ramp in the Ashoka family
     const lerp = (a: number, b: number) => Math.round(a + (b - a) * (0.25 + 0.75 * tt));
@@ -108,7 +108,7 @@
       {#if path && ui.variant !== 'universe'}
         <g transform={ui.variant === 'zoom' ? `translate(${zt.x},${zt.y}) scale(${zt.k})` : ''} class="counties" class:faint={ui.variant === 'dorling'}>
           {#each counties.features as f (f.properties.name)}
-            <path d={path(f)} fill={ui.variant === 'dorling' ? '#F6F4EF' : fill(f.properties.name)} vector-effect="non-scaling-stroke">
+            <path d={path(f)} fill={ui.variant === 'dorling' ? '#F5F6F8' : fill(f.properties.name)} vector-effect="non-scaling-stroke">
               <title>{f.properties.name} · {layout.countyCounts.get(norm(f.properties.name)) ?? 0}</title>
             </path>
           {/each}
@@ -201,17 +201,17 @@
   .stage.zoomable svg { cursor: grab; }
   svg { display: block; touch-action: none; }
   .counties path { stroke: #fff; stroke-width: 1; transition: fill 0.4s; }
-  .counties.faint path { stroke: #E6E2D8; }
+  .counties.faint path { stroke: #E1E4E8; }
   .nodes.animate .node { transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s; }
   .node { cursor: pointer; outline: none; }
   .node.dim { opacity: 0.13; }
   .node:focus-visible :global(.hit) { stroke: var(--navy); stroke-width: 2; }
   .sel-ring { fill: none; stroke: var(--navy); stroke-width: 2.2; }
-  .leader { stroke: var(--navy); stroke-width: 1.2; stroke-dasharray: 3 3; }
+  .leader { stroke: var(--navy); stroke-width: 1; }
   .leader-dot { fill: var(--navy); }
-  .bloom-bg { fill: #F6F4EF; stroke: #E6E2D8; }
-  .county-disc { fill: #F1EEE6; stroke: #DAD7CB; }
-  .county-disc.empty { fill: #E6E2D8; stroke: none; }
+  .bloom-bg { fill: #F5F6F8; stroke: #E1E4E8; }
+  .county-disc { fill: #F1F2F4; stroke: #D5D9DE; }
+  .county-disc.empty { fill: #E1E4E8; stroke: none; }
   .uni-group { fill: rgba(0, 63, 114, 0.04); stroke: rgba(0, 63, 114, 0.15); }
   .glabel { font-size: 11px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; pointer-events: none; }
   .glabel.big { font-size: 14px; font-weight: 700; fill: var(--navy); }

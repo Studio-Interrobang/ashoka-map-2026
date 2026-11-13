@@ -52,7 +52,7 @@
     overflow: auto; animation: slide 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   @keyframes slide { from { transform: translateX(24px); opacity: 0; } }
-  .close { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: var(--radius); border: none; background: #F3F1EA; cursor: pointer; color: var(--navy); }
+  .close { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: var(--radius); border: none; background: #F1F2F4; cursor: pointer; color: var(--navy); }
   .head { text-align: center; }
   .head img { display: block; margin: 4px auto 6px; }
   h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; }

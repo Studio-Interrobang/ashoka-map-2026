@@ -48,7 +48,7 @@
           </td>
           <td class="hide-s">{o.uat}<div class="sub">{o.county !== o.uat ? o.county : ''}</div></td>
           <td class="hide-s">
-            {#each o.clusters as c}<div class="cl"><span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.clusterShort[c]}</div>{/each}
+            {#each o.clusters as c}<div class="cl"><span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}</div>{/each}
           </td>
           <td>{t.reach[o.reach]}</td>
           <td class="hide-s num">{o.year ?? '–'}</td>
@@ -65,15 +65,15 @@
   th button, th:not(:has(button)) { font: inherit; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--navy); font-weight: 700; padding: 10px 8px; background: none; border: none; cursor: pointer; }
   th[aria-sort='ascending'] button::after { content: ' ↑'; }
   th[aria-sort='descending'] button::after { content: ' ↓'; }
-  td { padding: 8px; border-bottom: 1px solid #EEEBE2; vertical-align: top; }
+  td { padding: 8px; border-bottom: 1px solid #ECEEF1; vertical-align: top; }
   tr { cursor: pointer; }
-  tbody tr:hover, tr.sel { background: #F6F4EF; }
+  tbody tr:hover, tr.sel { background: #F5F6F8; }
   .org { display: flex; gap: 10px; align-items: flex-start; }
   .org img { flex: none; }
   .name { font: inherit; font-weight: 700; color: var(--navy); background: none; border: none; padding: 0; cursor: pointer; text-align: left; font-size: 14px; }
   .desc { color: #555; font-size: 12.5px; margin-top: 2px; }
   .sub { color: #888; font-size: 11.5px; }
-  .cl { display: flex; align-items: center; gap: 5px; font-size: 12px; white-space: nowrap; }
+  .cl { display: flex; align-items: flex-start; gap: 5px; font-size: 12px; line-height: 1.3; margin-bottom: 3px; } .cl .dot { margin-top: 4px; flex: none; }
   .dot { width: 8px; height: 8px; border-radius: 50%; }
   .num { font-variant-numeric: tabular-nums; }
   .show-s { display: none; }

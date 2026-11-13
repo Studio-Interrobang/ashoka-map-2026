@@ -6,7 +6,7 @@
   --green: #008770;
   --disc: #DAD7CB;
   --ink: #1d2733;
-  --line: #E3E0D7;
+  --line: #E1E4E8;
   --radius: 4px;
   --radius-sm: 3px;
   font-family: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -14,7 +14,7 @@
 }
 html, body, #app { margin: 0; height: 100%; }
 body { background: #fff; overflow: hidden; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

@@ -25,7 +25,7 @@
   <div class="chips" role="group" aria-label={t.lens.clusters}>
     {#each CLUSTERS as c}
       <button class="chip" class:on={ui.lens.clusters.includes(c)} aria-pressed={ui.lens.clusters.includes(c)} onclick={() => toggle(ui.lens.clusters, c)} title={t.cluster[c]}>
-        <span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.clusterShort[c]}
+        <span class="dot" style="background:{CLUSTER_COLORS[c]}"></span>{t.cluster[c]}
         <span class="n">{count((o) => o.clusters.includes(c))}</span>
       </button>
     {/each}
@@ -84,7 +84,7 @@
   }
   .pop .scroll { max-height: 240px; overflow: auto; display: flex; flex-direction: column; }
   .pop label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
-  .pop label:hover { background: #F3F1EA; }
+  .pop label:hover { background: #F1F2F4; }
   .pop label .n { margin-left: auto; }
   input { accent-color: var(--navy); }
   .clear { border: none; background: none; color: var(--navy); font-size: 12px; text-decoration: underline; }

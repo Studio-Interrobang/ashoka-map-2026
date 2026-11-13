@@ -27,7 +27,7 @@
 {#if detailed && r >= 9}
   <image href={avatarUrl(org.avatar, r > 26 ? 'l' : 's')} x={-r} y={-r} width={r * 2} height={r * 2} />
 {:else}
-  <circle r={r * 0.92} fill="#DAD7CB" />
+  <circle r={r * 0.92} fill="#E4E6E9" />
   {#each sectors as s}<path d={s.d} fill={s.fill} fill-rule="evenodd" />{/each}
   <circle r={r * 0.38} fill="#fff" />
 {/if}
