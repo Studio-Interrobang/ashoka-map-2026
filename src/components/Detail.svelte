@@ -55,7 +55,7 @@
           <div><dt>{t.detail.location}</dt><dd>{org.uat}{org.county && org.county !== org.uat ? `, ${org.county}` : ''}</dd></div>
           <div><dt>{t.detail.reach}</dt><dd>{t.reach[org.reach]}</dd></div>
           {#if org.year}<div><dt>{t.detail.founded}</dt><dd>{org.year}</dd></div>{/if}
-          {#if org.audience}<div class="wide"><dt>{t.detail.audience}</dt><dd>{org.audience}</dd></div>{/if}
+          {#if org.audience}<div><dt>{t.detail.audience}</dt><dd>{org.audience}</dd></div>{/if}
         </dl>
       </section>
       {#if org.activities.length}

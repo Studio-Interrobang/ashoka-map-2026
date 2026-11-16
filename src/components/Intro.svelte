@@ -269,8 +269,8 @@
   .cl i { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 4px; }
   /* phones: stack the examples and the three sizes vertically, label beside each avatar */
   .narrow .row { flex-direction: column; gap: 10px; }
-  .narrow .row figure { flex-direction: row; max-width: 100%; width: 100%; justify-content: flex-start; gap: 12px; text-align: left; padding-left: 8%; }
-  .narrow .row figcaption { align-items: flex-start; margin-top: 0; font-size: 11.5px; }
+  .narrow .row figure { flex-direction: row; max-width: 100%; width: 100%; box-sizing: border-box; justify-content: flex-start; gap: 12px; text-align: left; padding: 0 8px 0 4%; }
+  .narrow .row figcaption { flex: 1 1 0; min-width: 0; align-items: flex-start; margin-top: 0; font-size: 11.5px; overflow-wrap: anywhere; }
   .narrow .examples img { width: min(150px, calc(var(--sh) * 0.44)); flex: none; }
   .narrow .scale img { width: min(120px, calc(var(--sh) * 0.29)); flex: none; }
 

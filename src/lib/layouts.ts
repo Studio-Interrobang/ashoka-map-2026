@@ -198,9 +198,11 @@ function universe(orgs: Org[], w: number, h: number, groupBy: GroupBy, groupLabe
   const base = nodeRadius(w, h);
   for (let step = 0; step <= 26; step++) {
     const s = 1.6 - step * 0.05; // 1.6 → 0.3
-    // on phones keep bubbles legible and let the view scroll instead of shrinking further
-    const last = step === 26 || (!fit && w < 560 && s <= 0.85);
-    const r = base * s;
+    // on phones keep avatars big enough to tap (≥ ~22px) and let the view scroll instead of shrinking further
+    const phone = !fit && w < 560;
+    const PHONE_R = 11;
+    const last = step === 26 || (phone && base * s <= PHONE_R);
+    const r = phone ? Math.max(base * s, PHONE_R) : base * s;
     const items = keys.map((k) => { const p = packEqual(buckets.get(k)!, r, 0.9); return { k, p, cw: Math.max(p.R * 2, minCell) }; });
     const rows: { items: typeof items; width: number; height: number }[] = [];
     let cur: typeof items = []; let cw = 0;
