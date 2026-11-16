@@ -96,7 +96,7 @@
             label: t.orgsLabel(shownN, orgs.length),
             clusters: CLUSTERS.map((c) => ({ c, n: orgs.filter((o) => matches(o, ui.lens) && o.clusters.includes(c)).length, name: t.cluster[c], tone: TONE[c] })),
           },
-          footer: [t.source, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
+          footer: [t.source, t.credits.line, ui.view === 'map' ? t.geoCredit : ''].filter(Boolean),
           social: narrow ? 1.25 : undefined,
           // Clusters on phones: re-lay the bubbles for the image (at a 620px-wide scale so labels stay proportionate)
           fitTo: narrow && ui.view === 'clusters' ? (aw, ah) => ref.setExportSize({ w: 620, h: (ah * 620) / aw }) : undefined,
@@ -197,7 +197,13 @@
           </div>
         {/if}
       </div>
-      {#if ui.view === 'map'}<div class="credit">{t.geoCredit}</div>{/if}
+      <div class="row credits">
+        <span class="partner">{t.credits.research}
+          <a href="https://izidata.ro" target="_blank" rel="noopener" aria-label="IZI Data"><img src="./partners/izi-data.svg" alt="IZI Data" height="18" /></a></span>
+        <span class="partner">{t.credits.viz}
+          <a href="https://interrobang.ro" target="_blank" rel="noopener" aria-label="Studio Interrobang"><img src="./partners/studio-interrobang.svg" alt="Studio Interrobang" height="16" /></a></span>
+        {#if ui.view === 'map'}<span class="credit">{t.geoCredit}</span>{/if}
+      </div>
     </footer>
   </div>
 
@@ -251,6 +257,15 @@
   footer .row { display: flex; align-items: center; gap: 14px; white-space: nowrap; min-width: 0; }
   footer .src { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   footer a { color: var(--navy); font-weight: 700; flex: none; }
+  /* credits: partner logos in their own colours, small and quiet */
+  footer .credits { gap: 22px; margin-top: 4px; }
+  .partner { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+  .partner a { display: inline-flex; line-height: 0; border-radius: 2px; }
+  .partner img { display: block; width: auto; transition: opacity 0.2s; }
+  .partner img[alt='IZI Data'] { height: 24px; }
+  .partner img[alt='Studio Interrobang'] { height: 18px; }
+  .partner a:hover img { opacity: 0.75; }
+  footer .credits .credit { margin-left: auto; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
   .howto { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 30px; padding: 0 6px; border: none; background: none; font: inherit; font-size: 12px; font-weight: 600; color: #4a5560; cursor: pointer; }
   .howto:hover { color: var(--navy); }
@@ -281,6 +296,8 @@
   .narrow .tabs button { flex: 1; }
   .narrow footer .row { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
   .narrow footer .src { flex: 1 1 100%; }
+  .narrow footer .credits { gap: 4px 14px; }
+  .narrow footer .credits .credit { margin-left: 0; flex: 1 1 100%; }
 
   /* phones: just the total, left, next to the Filters button */
   .kpi { display: flex; align-items: baseline; gap: 6px; margin-right: auto; min-width: 0; }

@@ -77,6 +77,7 @@ const en = {
   source: 'Source: Ashoka Romania Changemaker Organizations Survey, March–April 2026',
   report: 'Read the report',
   geoCredit: 'Boundaries © geo-spatial.org (CC BY-SA)',
+  credits: { research: 'Research', viz: 'Data visualisation', line: 'Research: IZI Data · Data visualisation: Studio Interrobang' },
   facts: {
     clusters: '92% of organisations work toward systemic change.',
     reach: '58% have influenced national-level policy.',
@@ -188,6 +189,7 @@ const ro: typeof en = {
   source: 'Sursa: Sondajul Ashoka România privind organizațiile changemaker, martie–aprilie 2026',
   report: 'Citește raportul',
   geoCredit: 'Limite © geo-spatial.org (CC BY-SA)',
+  credits: { research: 'Cercetare', viz: 'Vizualizare de date', line: 'Cercetare: IZI Data · Vizualizare de date: Studio Interrobang' },
   facts: {
     clusters: '92% dintre organizații urmăresc o schimbare sistemică.',
     reach: '58% au influențat politicile publice la nivel național.',
