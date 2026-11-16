@@ -116,6 +116,21 @@
   });
 </script>
 
+{#snippet dlControl(iconOnly: boolean)}
+  <div class="dl" class:icon={iconOnly}>
+    {#if dlOpen}
+      <div class="dl-menu" role="menu">
+        <button role="menuitem" onclick={() => download('png')}>PNG</button>
+        <button role="menuitem" onclick={() => download('jpg')}>JPG</button>
+      </div>
+    {/if}
+    <button class="dl-btn" aria-expanded={dlOpen} aria-label={t.download} title={t.download} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>
+      {#if !iconOnly}{t.download}{/if}
+    </button>
+  </div>
+{/snippet}
+
 <svelte:window onclick={(e) => { if (!(e.target as HTMLElement).closest('.dl')) dlOpen = false; }} />
 
 <div class="app" class:narrow class:wide bind:clientWidth={appW}>
@@ -171,6 +186,7 @@
         <div class="msg"><span class="spinner"></span></div>
       {:else if ui.view !== 'table'}
         <Stage bind:this={stageRef} {orgs} {counties} w={sw} h={sh} {t} />
+        {#if narrow}<div class="dl-float">{@render dlControl(true)}</div>{/if}
       {:else}
         <Table {orgs} {t} />
       {/if}
@@ -182,20 +198,7 @@
       <div class="row">
         <span class="src">{t.source}</span>
         <a href={REPORT_URL} target="_blank" rel="noopener">{t.report} ↗</a>
-        {#if ui.view !== 'table' && counties}
-          <div class="dl">
-            {#if dlOpen}
-              <div class="dl-menu" role="menu">
-                <button role="menuitem" onclick={() => download('png')}>PNG</button>
-                <button role="menuitem" onclick={() => download('jpg')}>JPG</button>
-              </div>
-            {/if}
-            <button class="dl-btn" aria-expanded={dlOpen} disabled={busy} onclick={() => (dlOpen = !dlOpen)}>
-              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>
-              {t.download}
-            </button>
-          </div>
-        {/if}
+        {#if ui.view !== 'table' && counties && !narrow}{@render dlControl(false)}{/if}
       </div>
       <div class="row credits">
         <span class="partner">{t.credits.research}
@@ -294,9 +297,15 @@
   .narrow .toolbar .search-slot { flex: 1 1 100%; max-width: none; order: 3; }
   .narrow .tabs { flex: 1; }
   .narrow .tabs button { flex: 1; }
+  /* phones: footer = three left-aligned lines; Download lives on the chart */
   .narrow footer .row { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
-  .narrow footer .src { flex: 1 1 100%; }
-  .narrow footer .credits { gap: 4px 14px; }
+  .narrow footer .row:first-child { display: block; line-height: 1.4; }
+  .narrow footer .row:first-child a { white-space: nowrap; margin-left: 4px; padding-block: 6px; }
+  .dl-float { position: absolute; right: 8px; bottom: 8px; z-index: 20; }
+  .dl.icon .dl-btn { width: 30px; height: 30px; padding: 0; justify-content: center; }
+  .narrow footer .credits { gap: 4px 16px; margin-top: 6px; }
+  .narrow .partner img[alt='IZI Data'] { height: 20px; }
+  .narrow .partner img[alt='Studio Interrobang'] { height: 16px; }
   .narrow footer .credits .credit { margin-left: 0; flex: 1 1 100%; }
 
   /* phones: just the total, left, next to the Filters button */

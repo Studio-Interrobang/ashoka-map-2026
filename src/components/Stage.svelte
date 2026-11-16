@@ -242,7 +242,7 @@
       <button onclick={() => zoomBy(1 / 1.8)} aria-label={t.zoomOut} title={t.zoomOut}>−</button>
       {#if zoomed}<button class="reset" onclick={resetZoom} aria-label={t.reset} title={t.reset}>⟲</button>{/if}
     </div>
-    <div class="hint">{t.zoomHint}</div>
+    <div class="hint">{w < 600 ? t.zoomHintTouch : t.zoomHint}</div>
   {/if}
 </div>
 

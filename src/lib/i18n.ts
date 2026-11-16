@@ -92,6 +92,7 @@ const en = {
     universe: 'Packed universe',
   },
   zoomHint: 'Scroll or pinch to zoom',
+  zoomHintTouch: 'Pinch with two fingers to zoom',
   zoomIn: 'Zoom in',
   walk: {
     kicker: 'How to read the map',
@@ -204,6 +205,7 @@ const ro: typeof en = {
     universe: 'Universul organizațiilor',
   },
   zoomHint: 'Folosește rotița mouse-ului sau două degete pentru zoom',
+  zoomHintTouch: 'Folosește două degete pentru zoom',
   zoomIn: 'Mărește',
   // {de:x} renders the number followed by "de" when Romanian grammar needs it (see deRo)
   walk: {
