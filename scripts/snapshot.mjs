@@ -76,7 +76,9 @@ const OUTCOMES = [
 ];
 
 const RO_BOUNDS = { latMin: 43.5, latMax: 48.4, lonMin: 20.1, lonMax: 29.8 };
-const KNOWN_COMBOS = new Set(['C1', 'C2', 'C4', 'C1C2', 'C1C3', 'C1C4', 'C2C3', 'C2C4', 'C3C4', 'C1C2C4', 'C3', 'C1C2C3', 'C1C3C4', 'C2C3C4', 'C1C2C3C4']);
+// Cluster combos that have badge artwork (public/avatars/<combo>_<reach>-s.webp). A new combo needs new badges first.
+const AVATAR_DIR = path.resolve('public/avatars');
+const hasAvatar = (combo, reach) => fs.existsSync(path.join(AVATAR_DIR, `${combo}_${reach}-s.webp`)) && fs.existsSync(path.join(AVATAR_DIR, `${combo}_${reach}-l.webp`));
 const REACH = new Set(['Local', 'National', 'International']);
 
 // ---------- input ----------
@@ -149,7 +151,7 @@ function transform(rows) {
     const reach = g('reach');
     const lat = num(r[col.lat]); const lon = num(r[col.lon]);
     if (!clusters.length) errors.push(`row ${line} (${g('short')}): no cluster`);
-    if (!KNOWN_COMBOS.has(clusters.join(''))) errors.push(`row ${line}: unknown cluster combo ${clusters.join('')}`);
+    if (clusters.length && REACH.has(reach) && !hasAvatar(clusters.join(''), reach)) errors.push(`row ${line} (${g('short')}): no avatar artwork for ${clusters.join('')} ${reach}; add the badge first`);
     if (!REACH.has(reach)) errors.push(`row ${line} (${g('short')}): unknown reach "${reach}"`);
     if (lat == null || lon == null || lat < RO_BOUNDS.latMin || lat > RO_BOUNDS.latMax || lon < RO_BOUNDS.lonMin || lon > RO_BOUNDS.lonMax)
       errors.push(`row ${line} (${g('short')}): coordinates outside Romania (${lat}, ${lon})`);
