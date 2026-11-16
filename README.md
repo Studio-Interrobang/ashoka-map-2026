@@ -28,7 +28,7 @@ The main Google Sheet stays the single source of truth: edit the **Map data** ta
 The map never reads the main sheet directly. A separate sheet, [Ashoka map feed (public columns only)](https://docs.google.com/spreadsheets/d/1W8aO3nVmdCZQPaICDZ_qoziCuYjCif8V8bag9K-V_Ys/edit), pulls in only the public Map data columns with one `IMPORTRANGE` formula in A1. The read-only service account is shared on that feed sheet only, so its key cannot reach the Survey data tab (personal data). To add a column to the map, add its header to the list in that formula and to `ALLOWLIST` in `scripts/snapshot.mjs`.
 
 - `node scripts/snapshot.mjs --csv data/raw/map-data.csv` builds data from a local CSV export.
-- In CI, the GitHub Action reads the sheet every 6 hours with a read-only service account (secret `GOOGLE_SERVICE_ACCOUNT_JSON`). It validates the data and runs a PII guard. If either check fails, it keeps the last good `public/data.json` and opens an issue.
+- In CI, the GitHub Action reads the sheet every 6 hours with a read-only service account (`map-feed-reader@ashoka-map-feed-8ca3`, Viewer on the feed sheet only). There is no stored key: GitHub signs in to Google per run via Workload Identity Federation, accepted only for this repo's main branch (Google Cloud project `ashoka-map-feed-8ca3`, owner razvan@interrobang.ro). It validates the data and runs a PII guard. If either check fails, it keeps the last good `public/data.json` and opens an issue.
 - "Run workflow" in GitHub Actions triggers an immediate update.
 - `node scripts/build-avatars.mjs "<Final Files/Avatar>"` rebuilds the web avatars from the 6000px badges.
 

@@ -4,7 +4,10 @@
  *
  * Sources (first one available wins):
  *   --csv <path>                    local CSV export of the "Map data" tab (dev)
- *   GOOGLE_SERVICE_ACCOUNT_JSON env  service account with Viewer access to the feed sheet only
+ *   GOOGLE_ACCESS_TOKEN env          short-lived token for the read-only service account (CI: keyless
+ *                                    GitHub → Google sign-in, Workload Identity Federation)
+ *   GOOGLE_SERVICE_ACCOUNT_JSON env  service account key (fallback; key creation is blocked by org policy)
+ * The service account has Viewer access to the feed sheet only.
  *
  * Safety: only columns in ALLOWLIST are read; the PII guard fails the run if
  * anything that looks like a phone number or personal data slips through.
@@ -109,8 +112,12 @@ async function fromServiceAccount(json) {
     body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${sig}` }),
   }).then((r) => r.json());
   if (!tok.access_token) throw new Error('Token error: ' + JSON.stringify(tok));
+  return fromToken(tok.access_token);
+}
+
+async function fromToken(token) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?valueRenderOption=FORMATTED_VALUE`;
-  const res = await fetch(url, { headers: { authorization: `Bearer ${tok.access_token}` } }).then((r) => r.json());
+  const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } }).then((r) => r.json());
   if (!res.values) throw new Error('Sheets API error: ' + JSON.stringify(res).slice(0, 300));
   return res.values;
 }
@@ -180,8 +187,9 @@ const csvIdx = argv.indexOf('--csv');
 const checkOnly = argv.includes('--check');
 let rows;
 if (csvIdx >= 0) rows = parseCSV(fs.readFileSync(argv[csvIdx + 1], 'utf8'));
+else if (process.env.GOOGLE_ACCESS_TOKEN) rows = await fromToken(process.env.GOOGLE_ACCESS_TOKEN);
 else if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) rows = await fromServiceAccount(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-else { console.error('No source: pass --csv <file> or set GOOGLE_SERVICE_ACCOUNT_JSON'); process.exit(2); }
+else { console.error('No source: pass --csv <file> or set GOOGLE_ACCESS_TOKEN / GOOGLE_SERVICE_ACCOUNT_JSON'); process.exit(2); }
 
 const { orgs, errors, warnings } = transform(rows);
 warnings.forEach((w) => console.warn('warn:', w));
