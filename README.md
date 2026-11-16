@@ -23,7 +23,9 @@ URL options for the `src`:
 
 ## Data
 
-The Google Sheet stays the single source of truth. Only the **Map data** tab is read; the Survey data tab (with personal data) is never touched.
+The main Google Sheet stays the single source of truth: edit the **Map data** tab as usual.
+
+The map never reads the main sheet directly. A separate sheet, [Ashoka map feed (public columns only)](https://docs.google.com/spreadsheets/d/1W8aO3nVmdCZQPaICDZ_qoziCuYjCif8V8bag9K-V_Ys/edit), pulls in only the public Map data columns with one `IMPORTRANGE` formula in A1. The read-only service account is shared on that feed sheet only, so its key cannot reach the Survey data tab (personal data). To add a column to the map, add its header to the list in that formula and to `ALLOWLIST` in `scripts/snapshot.mjs`.
 
 - `node scripts/snapshot.mjs --csv data/raw/map-data.csv` builds data from a local CSV export.
 - In CI, the GitHub Action reads the sheet every 6 hours with a read-only service account (secret `GOOGLE_SERVICE_ACCOUNT_JSON`). It validates the data and runs a PII guard. If either check fails, it keeps the last good `public/data.json` and opens an issue.

@@ -4,7 +4,7 @@
  *
  * Sources (first one available wins):
  *   --csv <path>                    local CSV export of the "Map data" tab (dev)
- *   GOOGLE_SERVICE_ACCOUNT_JSON env  service account with Viewer access; reads ONLY the "Map data" range
+ *   GOOGLE_SERVICE_ACCOUNT_JSON env  service account with Viewer access to the feed sheet only
  *
  * Safety: only columns in ALLOWLIST are read; the PII guard fails the run if
  * anything that looks like a phone number or personal data slips through.
@@ -14,8 +14,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-const SHEET_ID = process.env.SHEET_ID || '100gcY4M67NCTE9jEMeMCYEq0KDj5eeGZDJdB1zdTrgY';
-const RANGE = "'Map data'!A1:Z400";
+// "Ashoka map feed (public columns only)": a separate sheet whose A1 holds an IMPORTRANGE of the
+// allowlisted "Map data" columns from the main sheet. The service account is shared on this feed
+// ONLY, so its key can never reach the main sheet (and the survey's personal data).
+const SHEET_ID = process.env.SHEET_ID || '1W8aO3nVmdCZQPaICDZ_qoziCuYjCif8V8bag9K-V_Ys';
+const RANGE = process.env.SHEET_RANGE || 'A1:Z400'; // first tab of the feed
 const OUT = path.resolve('public/data.json');
 
 // header in sheet -> key in data.json. Aliases allowed (sheet headers have drifted before).
