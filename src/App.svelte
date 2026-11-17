@@ -30,13 +30,6 @@
   let shownN = $derived(orgs.filter((o) => matches(o, ui.lens)).length);
   let wide = $derived(appW >= 1000);
 
-  let fact = $derived(
-    ui.lens.county ? t.facts.county
-    : ui.lens.activities.length ? t.facts.activities
-    : ui.lens.reach.length ? t.facts.reach
-    : ui.lens.clusters.length ? t.facts.clusters
-    : '',
-  );
 
   onMount(async () => {
     try {
@@ -190,9 +183,7 @@
       {:else}
         <Table {orgs} {t} />
       {/if}
-      {#if ui.view === 'map' && orgs.length && !narrow && fact}<p class="fact caption">{fact}</p>{/if}
     </div>
-    {#if ui.view !== 'map' && !narrow && fact}<p class="fact row">{fact}</p>{/if}
 
     <footer>
       <div class="row">
@@ -252,9 +243,6 @@
   .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #E1E4E8; border-top-color: var(--cyan); animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
 
-  .fact { margin: 0; font-size: 12px; line-height: 1.35; color: #4a5560; border-left: 3px solid var(--cyan); padding: 3px 8px; }
-  .fact.caption { position: absolute; left: 10px; top: 10px; max-width: min(46%, 380px); background: rgba(255, 255, 255, 0.88); pointer-events: none; }
-  .fact.row:empty { display: none; }
 
   footer { font-size: 10.5px; color: #6b6f75; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   footer .row { display: flex; align-items: center; gap: 14px; white-space: nowrap; min-width: 0; }

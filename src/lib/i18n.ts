@@ -1,6 +1,6 @@
 import type { Lang } from './types';
 
-// NOTE: RO cluster names + popup labels come from the live Flourish RO story; report facts in RO are still draft translations.
+// NOTE: RO cluster names + popup labels come from the live Flourish RO story.
 /** Romanian puts "de" between a number and its noun from 20 up (20, 33, 127 → "de"; 1–19, 101–119 → none). */
 export const deRo = (n: number) => (n >= 20 && (n % 100 === 0 || n % 100 >= 20) ? 'de ' : '');
 
@@ -77,12 +77,6 @@ const en = {
   report: 'Read the report',
   geoCredit: 'Boundaries © geo-spatial.org (CC BY-SA)',
   credits: { research: 'Research', viz: 'Data visualisation', line: 'Research: IZI Data · Data visualisation: Studio Interrobang' },
-  facts: {
-    clusters: '92% of organisations work toward systemic change.',
-    reach: '58% have influenced national-level policy.',
-    activities: 'Social mobilisation (71%) and civic education (68%) are the most common activities.',
-    county: '91% are based in urban areas; rural civic work is often informal and under-mapped.',
-  },
   variants: {
     zoom: 'Zoomable dots',
     bloom: 'Locality bubbles',
@@ -189,12 +183,6 @@ const ro: typeof en = {
   report: 'Citește raportul',
   geoCredit: 'Limite © geo-spatial.org (CC BY-SA)',
   credits: { research: 'Cercetare', viz: 'Vizualizare de date', line: 'Cercetare: IZI Data · Vizualizare de date: Studio Interrobang' },
-  facts: {
-    clusters: '92% dintre organizații urmăresc o schimbare sistemică.',
-    reach: '58% au influențat politicile publice la nivel național.',
-    activities: 'Mobilizarea socială (71%) și educația civică (68%) sunt cele mai frecvente activități.',
-    county: '91% își au sediul în mediul urban; activitatea civică din mediul rural este adesea informală și mai greu de cartografiat.',
-  },
   variants: {
     zoom: 'Puncte cu zoom',
     bloom: 'Bule pe localități',
