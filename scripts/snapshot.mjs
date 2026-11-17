@@ -150,11 +150,15 @@ function transform(rows) {
     const clusters = ['c1', 'c2', 'c3', 'c4'].filter((k) => g(k)).map((k) => k.toUpperCase());
     const reach = g('reach');
     const lat = num(r[col.lat]); const lon = num(r[col.lon]);
-    if (!clusters.length) errors.push(`row ${line} (${g('short')}): no cluster`);
-    if (clusters.length && REACH.has(reach) && !hasAvatar(clusters.join(''), reach)) errors.push(`row ${line} (${g('short')}): no avatar artwork for ${clusters.join('')} ${reach}; add the badge first`);
-    if (!REACH.has(reach)) errors.push(`row ${line} (${g('short')}): unknown reach "${reach}"`);
+    // A row that is not complete yet (new org still being filled in) is left off the map with a
+    // warning instead of blocking the whole update; it appears on the next run once it is complete.
+    const missing = [];
+    if (!clusters.length) missing.push('no cluster');
+    if (!REACH.has(reach)) missing.push(`unknown scale of work "${reach}"`);
     if (lat == null || lon == null || lat < RO_BOUNDS.latMin || lat > RO_BOUNDS.latMax || lon < RO_BOUNDS.lonMin || lon > RO_BOUNDS.lonMax)
-      errors.push(`row ${line} (${g('short')}): coordinates outside Romania (${lat}, ${lon})`);
+      missing.push(`coordinates missing or outside Romania (${lat}, ${lon})`);
+    if (!missing.length && !hasAvatar(clusters.join(''), reach)) missing.push(`no avatar artwork for ${clusters.join('')} ${reach}; add the badge first`);
+    if (missing.length) { warnings.push(`row ${line} (${g('short') || g('name')}): skipped, ${missing.join('; ')}`); return; }
     const yearMatch = g('year').match(/\d{4}/);
     if (!yearMatch) warnings.push(`row ${line} (${g('short')}): no establishment year`);
     const contact = g('contact');
