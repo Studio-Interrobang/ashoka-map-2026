@@ -80,6 +80,10 @@ const RO_BOUNDS = { latMin: 43.5, latMax: 48.4, lonMin: 20.1, lonMax: 29.8 };
 const AVATAR_DIR = path.resolve('public/avatars');
 const hasAvatar = (combo, reach) => fs.existsSync(path.join(AVATAR_DIR, `${combo}_${reach}-s.webp`)) && fs.existsSync(path.join(AVATAR_DIR, `${combo}_${reach}-l.webp`));
 const REACH = new Set(['Local', 'National', 'International']);
+// Rows kept in the sheet but left off the map for now (by sheet ID). Delete a line to bring the org back.
+const EXCLUDE = new Map([
+  ['dkzkfq7q3tcdd0qrr5p3qacvbz8f3y35', 'Centrul pentru Resurse Civice Constanța (same short name "CeRe" as the new București org; hidden 2026-11-18)'],
+]);
 
 // ---------- input ----------
 function parseCSV(text) {
@@ -143,7 +147,7 @@ function transform(rows) {
   rows.slice(1).forEach((r, i) => {
     const g = (k) => clean(r[col[k]]);
     const id = g('id');
-    if (!id) return;
+    if (!id || EXCLUDE.has(id)) return;
     const line = i + 2;
     if (seen.has(id)) errors.push(`row ${line}: duplicate ID ${id}`);
     seen.add(id);
