@@ -10,6 +10,7 @@
   import { loadAll, type Counties } from './lib/data';
   import { ui, syncUrl, matches, lensActive } from './lib/state.svelte';
   import { exportViz } from './lib/exportViz';
+  import { initTracking, track } from './lib/track.svelte';
   import { t as dict } from './lib/i18n';
   import { CLUSTERS, type Org, type GroupBy } from './lib/types';
   // AA-contrast text tones of the cluster colours (same as the summary strip)
@@ -29,6 +30,7 @@
   let titlesH = $state(0);
   let shownN = $derived(orgs.filter((o) => matches(o, ui.lens)).length);
   let wide = $derived(appW >= 1000);
+  initTracking(() => orgs);
 
 
   onMount(async () => {
@@ -56,7 +58,7 @@
   });
 
   const groupings: GroupBy[] = ['cluster', 'reach', 'activity'];
-  function openIntro() { ui.selected = null; ui.intro = true; }
+  function openIntro(manual = false) { ui.selected = null; ui.intro = true; if (manual) track('walkthrough opened'); }
 
   // ---- download (Map / Clusters) ----
   let stageRef = $state<{ chartEls: () => { svg: SVGSVGElement; overlay: HTMLElement | null }; withFullView: <T>(fn: () => Promise<T>) => Promise<T>; setExportSize: (s: { w: number; h: number } | null) => Promise<void> } | undefined>();
@@ -75,6 +77,7 @@
   }
   async function download(fmt: 'png' | 'jpg') {
     dlOpen = false;
+    track('download', { format: fmt, view: ui.view });
     const ref = stageRef;
     if (!ref) return;
     busy = true;
@@ -145,7 +148,7 @@
         <button role="tab" aria-selected={ui.view === 'clusters'} onclick={() => (ui.view = 'clusters')}>{t.clusters}</button>
         <button role="tab" aria-selected={ui.view === 'table'} onclick={() => (ui.view = 'table')}>{t.table}</button>
       </div>
-      <button class="howto" onclick={openIntro} title={t.howTo} aria-label={t.howTo}>
+      <button class="howto" onclick={() => openIntro(true)} title={t.howTo} aria-label={t.howTo}>
         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><path d="M6.6 5.4v5.2L10.8 8z" fill="currentColor" stroke="none"/></svg>
         {#if !narrow}<span>{t.howTo}</span>{/if}
       </button>

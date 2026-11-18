@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { track } from '../lib/track.svelte';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { geoPath } from 'd3-geo';
@@ -109,6 +110,7 @@
 
   function go(s: number) { playing = false; step = Math.max(0, Math.min(LAST, s)); if (step === 0) shown = 4; }
   function close() {
+    track('walkthrough closed', { step: step + 1, finished: step === LAST });
     try { localStorage.setItem('ashokaIntroSeen', '1'); } catch { /* storage blocked: it will just show again */ }
     ui.intro = false;
   }
